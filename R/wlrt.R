@@ -77,6 +77,7 @@ wlrt <- function(data,
     stop("Censoring type should be right censoring")
   }
 
+  formula_vars <- all.vars(formula)
   Terms <- terms(formula,"strata")
   terms_vars <- labels(Terms)
   strata_vars <- attr(Terms,"specials")$strata
