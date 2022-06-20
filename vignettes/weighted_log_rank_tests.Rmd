@@ -1,0 +1,133 @@
+---
+title: "Weighted log-rank tests"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{weighted_log_rank_tests}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+See Magirr and Burman (2019) and Magirr (2021) for details about the weighted log-rank tests, and in particular the modestly weighted log-rank test. This vignette simply contains a summary of the formulae used within this package.
+
+Firstly, the general definition of the weighted log-rank test is provided. Consider the ordered, distinct event times $t_1, \dots, t_k$. Let $d_{0,j}$ and $d_{1,j}$ be the number of events at event time $t_{j}$ on each of the arms respectively, and let $d_{j}$ be equal to the sum of these two values. Similarly, let $n_{0,j}$ and $n_{1,j}$ be the number at risk at event time $t_{j}$ on each of the arms respectively, and let $n_{j}$ be equal to the sum of these two values. At each time $t_{j}$, we evaluate the observed number of events on one arm, $d_{0,j}$, and the expected number of events on the same arm, $d_j \frac{n_{0,j}}{n_j}$. The test statistic $U$ is then a weighted sum of the difference of these values, i.e.
+
+\[
+U = \sum_{j=1}^k w_j \left(d_{0,j} - d_j \frac{n_{0,j}}{n_j}\right)
+\]
+
+The weights $w_j$ that are used depend on the type of weighted log-rank test. These are described in the next section.
+
+Under the assumption that the survival curves of the two treatment arms are equal, the distribution of $U$ is
+
+\[
+U \sim N\left( 0, \sum_{j=1}^k w_j^2\frac{n_{0,j}n_{1,j} d_j (n_j - d_j)}{n_j^2(n_j-1)}\right)
+\]
+
+
+## Weights
+
+- The standard log-rank test uses weights:
+\[
+w_j=1
+\]
+
+- The Fleming-Harrington ($\rho$,$\gamma$) test uses weights:
+\[
+w_j = \hat{S}(t_{j}-) ^ \rho * (1 - \hat{S}(t_{j}-)) ^ \gamma
+\]
+where $\hat{S}(t)$ is the Kaplan Meier estimate of the survival curve in the pooled data (both treatment arms) and time $t_j-$ is the time just before $t_j$. 
+There is the matter of choosing $\rho$ and $\gamma$. A popular choice is $\rho=0$ and $\gamma=1$ which means that the weights are equal to 1 minus the Kaplan Meier estimate of the survival curve.
+
+- The modestly weighted log-rank test uses weights:
+\[
+w_j = 1 / \max{\{\hat{S}(t_{j}-), \hat{S}(t^\ast)\}}
+\]
+There is the matter of choosing $t^\ast$ or alternatively choosing the value of $\hat{S}(t^\ast)$. See Magirr (2021) for a discussion on this.
+
+## Permutation test and scores
+
+Leton and Zuluaga (2001) showed that every weighted log-rank test can be written as either
+an observed-minus-expected test (as described above), or as a permutation test.
+
+
+The weights can be rewritten as scores for a permutation test using the following formulae for the censoring scores and event scores respectively:
+
+\[
+C_j=-\sum_{i=1}w_i\frac{d_i}{n_i}
+\]
+
+\[
+c_j=C_j+w_j
+\]
+
+
+## Using the package
+
+
+First, we simulate some data using the `sim_events_delay` function. 
+
+This function simulates a dataset for a two-arm RCT with delayed separation of survival curves. The survival times on the control arm
+follow an exponential distribution, and the survival times on the experimental arm follow a two-piece exponential distribution.
+Given rate parameter $\lambda$, the exponential distribution has the form:
+
+\[
+f(t)=\lambda \exp(-\lambda t)
+\]
+
+Recruitment onto the trial is modeled using the power model
+\[
+P(\mathrm{recruited\ before\ T}) = (\mathrm{T} / \mathrm{rec\_period}) ^ \mathrm{rec\_power}
+\]
+where
+$\mathrm{rec\_period}$ is the time at the end of recruitment period, and $\mathrm{rec\_power}$ controls the rate of recruitment.
+
+This means that participants enter the trial at calendar times after time 0. However, all observations are censored at the calendar time `max_cal_t`.
+
+
+```{r 1}
+library(wlrt)
+set.seed(1)
+sim_data <- sim_events_delay(
+  n_c = 5,
+  n_e = 5,
+  delay_e = 6,
+  lambda_c = log(2)/9,
+  lambda_e_1 = log(2)/9,
+  lambda_e_2 = log(2)/18,
+  rec_period = 12,
+  rec_power = 1,
+  max_cal_t = 36
+)
+sim_data
+```
+
+
+```{r find_scores}
+scores_out<-find_scores(data=sim_data,
+  formula=Surv(event_time,event_status)~group,
+  wlr="mw",
+  t_star = 3
+)
+plot(scores_out)
+
+```
+
+## References
+Leton, E. and Zuluaga, P. (2001) 
+Equivalence between score and weighted tests for survival curves. 
+Commun Stat., 30(4), 591-608.
+
+Magirr, D. (2021).
+Non-proportional hazards in immuno-oncology: Is an old perspective needed?.
+Pharmaceutical Statistics, 20(3), 512-527.
+
+Magirr, D. and Burman, C.F., (2019).
+Modestly weighted logrank tests.
+Statistics in medicine, 38(20), 3782-3790.
