@@ -1,0 +1,1 @@
+#' @param wlr Character string specifying type of weighted log-rank test. Either `"lr"` for a standard log-rank test, `"mw"` for a modestly-weighted log-rank test, or `"fh"` for the Fleming-Harrington rho-gamma family.
