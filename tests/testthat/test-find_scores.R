@@ -21,14 +21,15 @@ test_that("should add to zero by definition", {
                  sum(df_scores$df$n_censor*df_scores$df$score_cens), 0)
 })
 
-save_pdf <- function(plot, width = 400, height = 400) {
-  path <- tempfile(fileext = ".pdf")
-  pdf(file = path, width = 400, height = 400)
+save_png <- function(code) {
+  path <- tempfile(fileext = ".png")
+  png(file = path)
   on.exit(dev.off())
-  plot
+  code
   path
 }
 
 test_that("plot", {
-  expect_snapshot_file(save_pdf(plot.wlrt_score(df_scores)), "plot_wlrt_score.png")
+  expect_snapshot_file(save_png(	
+    plot.wlrt_score(df_scores)), "plot_wlrt_score.png",cran = TRUE)
 })
