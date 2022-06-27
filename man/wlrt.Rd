@@ -5,8 +5,8 @@
 \title{Weighted log-rank test}
 \usage{
 wlrt(
-  data,
   formula,
+  data,
   wlr,
   t_star = NULL,
   s_star = NULL,
@@ -15,10 +15,10 @@ wlrt(
 )
 }
 \arguments{
-\item{data}{Data frame containing time-to-event data.}
-
 \item{formula}{Formula object. The response (on the left of the \code{~} operator) must be a survival object as returned by the \code{Surv} function.
 The terms (on the right of the \code{~} operator) must include the treatment arm indicator, and additionally can include strata using the \code{strata} function.}
+
+\item{data}{Data frame containing time-to-event data.}
 
 \item{wlr}{Character string specifying type of weighted log-rank test. Either \code{"lr"} for a standard log-rank test, \code{"mw"} for a modestly-weighted log-rank test, or \code{"fh"} for the Fleming-Harrington rho-gamma family.}
 
@@ -60,18 +60,38 @@ sim_data <- sim_events_delay(
   max_cal_t = 36
 )
 #example setting t_star
-wlrt(data=sim_data,
-  formula=Surv(event_time,event_status)~group,
+wlrt(formula=Surv(event_time,event_status)~group,
+  data=sim_data,
   wlr="mw",
-  t_star = 3
+  t_star = 4
 )
 #example setting s_star
-wlrt(data=sim_data,
-  formula=Surv(event_time,event_status)~group,
+wlrt(formula=Surv(event_time,event_status)~group,
+  data=sim_data,
   wlr="mw",
   s_star = 0.5
 )
-
+#example with strata
+sim_data_0 <- sim_data
+sim_data_0$ecog=0
+sim_data_1 <- sim_events_delay(
+  n_c = 5,
+  n_e = 5,
+  delay_e = 6,
+  lambda_c = log(2)/6,
+  lambda_e_1 = log(2)/6,
+  lambda_e_2 = log(2)/12,
+  rec_period = 12,
+  rec_power = 1,
+  max_cal_t = 36
+)
+sim_data_1$ecog=1
+sim_data_strata<-rbind(sim_data_0,sim_data_1)
+wlrt(formula=Surv(event_time,event_status)~group+strata(ecog),
+  data=sim_data_strata,
+  wlr="mw",
+  t_star = 4
+)
 }
 \references{
 Magirr, D. (2021).
