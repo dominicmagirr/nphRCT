@@ -51,6 +51,11 @@ w_j = 1 / \max{\{\hat{S}(t_{j}-), \hat{S}(t^\ast)\}}
 \]
 There is the matter of choosing $t^\ast$ or alternatively choosing the value of $\hat{S}(t^\ast)$. See Magirr (2021) for a discussion on this.
 
+
+### Stratification
+
+
+
 ## Permutation test and scores
 
 Leton and Zuluaga (2001) showed that every weighted log-rank test can be written as either
@@ -131,3 +136,7 @@ Pharmaceutical Statistics, 20(3), 512-527.
 Magirr, D. and Burman, C.F., (2019).
 Modestly weighted logrank tests.
 Statistics in medicine, 38(20), 3782-3790.
+
+Magirr, D. and Jiménez, J. (2022)
+Stratified modestly-weighted log-rank tests in settings with an anticipated delayed separation of survival curves
+PREPRINT at https://arxiv.org/abs/2201.10445
