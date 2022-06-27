@@ -79,9 +79,8 @@ find_scores<-function(formula,
   out
 }
 
-
-plot.wlrt_score<-function(x,
-                      ...){
+#' @export
+plot.wlrt_score<-function(x,...){
   df<-x$df
   df$x_pos<-1:nrow(df)
   df_cens<-df[df$n_censor>0,]
