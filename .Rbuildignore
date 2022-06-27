@@ -2,3 +2,4 @@
 man-roxygen
 ^doc$
 ^Meta$
+^.*\.Rproj$
