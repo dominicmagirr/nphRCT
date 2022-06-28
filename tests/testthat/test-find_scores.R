@@ -33,3 +33,11 @@ test_that("plot", {
   expect_snapshot_file(save_png(	
     plot.wlrt_score(df_scores)), "plot_wlrt_score.png",cran = TRUE)
 })
+
+save_table <- function(code) {
+  path <- tempfile(fileext = ".png")
+  png(file = path)
+  on.exit(dev.off())
+  code
+  path
+}
