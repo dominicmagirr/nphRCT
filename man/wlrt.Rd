@@ -49,8 +49,8 @@ The output is calculated as outlined in \code{vignette("weighted_log_rank_tests"
 library(wlrt)
 set.seed(1)
 sim_data <- sim_events_delay(
-  n_c = 5,
-  n_e = 5,
+  n_c = 50,
+  n_e = 50,
   delay_e = 6,
   lambda_c = log(2)/9,
   lambda_e_1 = log(2)/9,
@@ -71,12 +71,12 @@ wlrt(formula=Surv(event_time,event_status)~group,
   wlr="mw",
   s_star = 0.5
 )
-#example with strata
+#example with 1 strata
 sim_data_0 <- sim_data
 sim_data_0$ecog=0
 sim_data_1 <- sim_events_delay(
-  n_c = 5,
-  n_e = 5,
+  n_c = 50,
+  n_e = 50,
   delay_e = 6,
   lambda_c = log(2)/6,
   lambda_e_1 = log(2)/6,
@@ -89,6 +89,13 @@ sim_data_1$ecog=1
 sim_data_strata<-rbind(sim_data_0,sim_data_1)
 wlrt(formula=Surv(event_time,event_status)~group+strata(ecog),
   data=sim_data_strata,
+  wlr="mw",
+  t_star = 4
+)
+#example with 2 strata
+sim_data_strata_2<-cbind(sim_data_strata,sex=rep(c("M","F"),times=100))
+wlrt(formula=Surv(event_time,event_status)~group+strata(ecog)+strata(sex),
+  data=sim_data_strata_2,
   wlr="mw",
   t_star = 4
 )
