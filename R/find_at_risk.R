@@ -1,41 +1,109 @@
+#' Calculate at-risk table
+#' 
+#' This function calculates the number of individuals at risk and number of events at each time
+#' an event occurs (and censoring if `include_cens==TRUE`). 
+#' 
+#' @template formula
+#' @template data
+#' @template include_cens
+#' @return Data frame containing columns (in order): 
+#' 
+#' - event time `t_j` 
+#' - number of events in each of the treatments at event time `t_j`
+#' - combined number of events in both treatments at event time `t_j`
+#' - number of individuals at risk in each of the treatment groups just before time `t_j`
+#' - combined number of individuals at risk in both treatment groups just before time `t_j`
+#' 
+#' @details
+#'
+#' @examples
+#' library(wlrt)
+#' set.seed(1)
+#' sim_data <- sim_events_delay(
+#'   n_c = 5,
+#'   n_e = 5,
+#'   delay_e = 6,
+#'   lambda_c = log(2)/9,
+#'   lambda_e_1 = log(2)/9,
+#'   lambda_e_2 = log(2)/18,
+#'   rec_period = 12,
+#'   rec_power = 1,
+#'   max_cal_t = 36
+#' )
+#' #with censoring included
+#' find_at_risk(formula=Surv(event_time,event_status)~group,
+#'   data=sim_data,
+#'   include_cens=TRUE)
+#' #with censoring excluded
+#' find_at_risk(formula=Surv(event_time,event_status)~group,
+#'   data=sim_data,
+#'   include_cens=FALSE)
 #' @export
 
-find_at_risk<-function(data,
-                       formula,
+find_at_risk<-function(formula,
+                       data,
                        include_cens=TRUE){
-
+  check_formula(formula=formula,
+                data=data)
+  
   formula_vars <- all.vars(formula)
   time_col <- formula_vars[1]
   status_col <- formula_vars[2]
+  terms_vars<-formula_vars[-(1:2)]
   Terms <- terms(formula,"strata")
-  terms_vars <- labels(Terms)
-  strata_vars <- attr(Terms,"specials")$strata
-  if (length(strata_vars)>0){stop("There should be no strata in formula argument for function find_at_risk")}
+  strata_index <- survival::untangle.specials(Terms,"strata")$terms
+  if (length(strata_index)>0){stop("Function does not account for strata")}
 
   #Find at-risk tables
   group_col<-terms_vars
-  df_events<-data.frame(time=data[[time_col]],
-                        status=data[[status_col]],
-                        group=data[[group_col]]
-  )
-  groups <- sort(unique(df_events$group))
+  groups <- as.vector(sort(unique(data[[group_col]])))
   if (length(groups)!=2){stop("Only 2 treatment groups allowed")}
-  df_events[,paste0("n_risk_", groups)]<-sapply(groups,function(i){+(df_events$group == i)})
-  df_events[,paste0("n_event_", groups)]<-sapply(groups,function(i){df_events$status * df_events[[paste0("n_risk_", i)]]})
-  df_events[["group"]] <- df_events[["status"]] <-NULL
-  df_events <- aggregate(. ~ time, df_events, FUN = sum)
-  df_events[,paste0("n_risk_", groups)]<-sapply(groups,function(i){rev(cumsum(rev(df_events[,paste0("n_risk_", i)])))})
-
-  if(include_cens==FALSE){
-    n_event<-rowSums(df_events[,paste0("n_event_", groups)])
-    df_events<-df_events[n_event>0,]
+  
+  data<-data[order(data$event_time),]
+  trt <- data[[group_col]]
+  times <- data[[time_col]]
+  d_j <- data[[status_col]]
+  
+  if (include_cens==TRUE){
+    #number of events
+    n_event_g <- matrix(0, length(times), 2)
+    for (i in 1:2){
+      n_event_g[, i] <- (trt == groups[i])*d_j
+    }
+    n_event_g<-data.frame(times,n_event_g)
+    n_event_g<-aggregate(. ~ times, n_event_g, FUN = sum)[,-1]
+    
+    #number at risk
+    t_j<-unique(times)
+    n_risk_g <- matrix(0, length(t_j), 2)
+    for (i in 1:2){
+      n_risk_g[, i] <- colSums(matrix(rep(t_j,each = sum(trt == groups[i])),ncol=length(t_j)) <= times[trt == groups[i]])
+    }
+  }else{
+    #number of events
+    d_j_events<-(d_j > 0)
+    trt_events <- trt[d_j_events]
+    t_j_events<-unique(times[d_j_events])
+    n_event_g <- matrix(table(trt[d_j_events > 0], times[d_j_events]),ncol=2,byrow = TRUE)
+    #number at risk
+    n_risk_g <- matrix(0, length(t_j_events), 2)
+    for (i in 1:2){
+      n_risk_g[, i] <- 
+        colSums(matrix(rep(t_j_events,each = sum(trt == groups[i])),ncol=length(t_j_events)) <= times[trt == groups[i]])
+    }
   }
+  n_event <- rowSums(n_event_g)
+  n_risk <- rowSums(n_risk_g)
 
-  n_eventg <- as.matrix(df_events[, paste0("n_event_", groups)])
-  df_events[["n_event"]] <- rowSums(n_eventg)
-  n_riskg <- as.matrix(df_events[, paste0("n_risk_", groups)])
-  df_events[["n_risk"]] <- rowSums(n_riskg)
-
-  df_events
+  out<-data.frame(n_event_g,n_event,n_risk_g,n_risk)
+  colnames(out)<-c(paste0("n_event_",groups),"n_event",paste0("n_risk_",groups),"n_risk")
+  
+  if (include_cens==TRUE){
+    out<-cbind(t_j=t_j,out)
+  }else{
+    out<-cbind(t_j=t_j_events,out)
+  }
+  
+  out
 
 }
