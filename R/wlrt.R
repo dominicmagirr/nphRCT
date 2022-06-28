@@ -25,8 +25,8 @@
 #' library(wlrt)
 #' set.seed(1)
 #' sim_data <- sim_events_delay(
-#'   n_c = 5,
-#'   n_e = 5,
+#'   n_c = 50,
+#'   n_e = 50,
 #'   delay_e = 6,
 #'   lambda_c = log(2)/9,
 #'   lambda_e_1 = log(2)/9,
@@ -47,12 +47,12 @@
 #'   wlr="mw",
 #'   s_star = 0.5
 #' )
-#' #example with strata
+#' #example with 1 strata
 #' sim_data_0 <- sim_data
 #' sim_data_0$ecog=0
 #' sim_data_1 <- sim_events_delay(
-#'   n_c = 5,
-#'   n_e = 5,
+#'   n_c = 50,
+#'   n_e = 50,
 #'   delay_e = 6,
 #'   lambda_c = log(2)/6,
 #'   lambda_e_1 = log(2)/6,
@@ -65,6 +65,13 @@
 #' sim_data_strata<-rbind(sim_data_0,sim_data_1)
 #' wlrt(formula=Surv(event_time,event_status)~group+strata(ecog),
 #'   data=sim_data_strata,
+#'   wlr="mw",
+#'   t_star = 4
+#' )
+#' #example with 2 strata
+#' sim_data_strata_2<-cbind(sim_data_strata,sex=rep(c("M","F"),times=100))
+#' wlrt(formula=Surv(event_time,event_status)~group+strata(ecog)+strata(sex),
+#'   data=sim_data_strata_2,
 #'   wlr="mw",
 #'   t_star = 4
 #' )
@@ -86,20 +93,11 @@ wlrt <- function(formula,
                  s_star = NULL,
                  rho = NULL,
                  gamma = NULL) {
-  #Checks
+  
+  check_formula(formula=formula,data=data)
   Surv<-survival::Surv
-  Y <- eval(formula[[2]], data) ##formula[[2]] takes lhs
-  if (!inherits(Y, "Surv")){
-    stop("formula has an incorrect format")
-  }
-  if (!attr(Y, "type") == "right") {
-    stop("Censoring type should be right censoring")
-  }
   
   formula_vars <- all.vars(formula)
-  if (any(is.na(data[, formula_vars]))) {
-    stop("NA's in data set. wlrt doesn't have a default for missing data.")
-  }  
   time_col <- formula_vars[1]
   status_col <- formula_vars[2]
   terms_vars<-formula_vars[-(1:2)]
@@ -109,11 +107,7 @@ wlrt <- function(formula,
   if (length(strata_index)>0){
     strata_col<-terms_vars[strata_index]
     group_col<-terms_vars[-strata_index]  
-    if (length(strata_col)!=1) {
-     stop("One strata (maximum) must be specified in formula")
-    }
-  }
-  else{
+  }else{
     group_col<-terms_vars
   }
   
@@ -131,39 +125,33 @@ wlrt <- function(formula,
            rho = rho,
            gamma = gamma)
   }else{
-
   formula<-as.formula(paste0("Surv(",time_col,",",status_col,") ~ ",group_col))
-  data_strata<-split(data, data[[strata_col]])
-  out_strata_w<-lapply(data_strata,function(x){wlrt_strata(formula=formula,
-                                 data=x,
-                                 wlr=wlr,
-                                 t_star = t_star,
-                                 s_star = s_star,
-                                 rho = rho,
-                                 gamma = gamma)})
-  out_strata_lr<-lapply(data_strata,function(x){wlrt_strata(formula=formula,
-                                                   data=x,
-                                                   wlr="lr",
-                                                   t_star = t_star,
-                                                   s_star = s_star,
-                                                   rho = rho,
-                                                   gamma = gamma)})
-  u_strata_w<-unlist(lapply(out_strata_w , "[[" , "u" ))
-  v_strata_w<-unlist(lapply(out_strata_w , "[[" , "v_u"))
-  z_strata_w<-unlist(lapply(out_strata_w , "[[" , "z"))
-  v_strata_lr<-unlist(lapply(out_strata_lr , "[[" , "v_u"))
+  for (str in strata_col){data[[str]]<-paste0(str, data[[str]])}
+  data_strata<-split(data, data[,strata_col])
+  test_w<-purrr::map_df(data_strata,
+                              wlrt_strata,
+                              formula=formula,
+                               wlr=wlr,
+                               t_star = t_star,
+                               s_star = s_star,
+                               rho = rho,
+                               gamma = gamma)
+  test_lr<-purrr::map_df(data_strata,
+                               wlrt_strata,
+                               formula=formula,
+                               wlr="lr")
   
-  u_tilde_w_z<-sum(sqrt(v_strata_lr)*z_strata_w)
-  v_tilde_w_z<-sum(v_strata_lr)
+  u_tilde_w_z<-sum(sqrt(test_lr$v_u)*test_w$z)
+  v_tilde_w_z<-sum(test_lr$v_u)
   z_tilde_w_z<-u_tilde_w_z/sqrt(v_tilde_w_z)
-  
-  out <- list(by_strata=out_strata_w,
-  combined=data.frame(
-    u_tilde_w_z = u_tilde_w_z,
-    v_tilde_w_z = v_tilde_w_z,
-    z_tilde_w_z = z_tilde_w_z,
-    trt_group = sort(unique(data[[group_col]]))[2]
-  ))
+
+  out <- list(by_strata = data.frame(strata=names(data_strata),test_w),
+              combined = data.frame(
+                u = u_tilde_w_z,
+                v = v_tilde_w_z,
+                z = z_tilde_w_z,
+                trt_group = sort(unique(data[[group_col]]))[2]
+              ))
   }
   out
   
@@ -177,7 +165,9 @@ wlrt_strata <- function(formula,
                  s_star = NULL,
                  rho = NULL,
                  gamma = NULL) {
-
+  formula_vars <- all.vars(formula)
+  terms_vars<-formula_vars[-(1:2)]
+  
   #calculate weights
   w<-find_weights(formula=formula,
                   data=data,
@@ -192,23 +182,23 @@ wlrt_strata <- function(formula,
   df_events<-find_at_risk(formula=formula,
                           data=data,
                           include_cens=FALSE)
-  n_eventg <- as.matrix(df_events[, 4:5])
+  n_event_g <- as.matrix(df_events[, grep("n_event_",names(df_events))])
   n_event<-df_events$n_event
-  n_riskg <- as.matrix(df_events[, 2:3])
+  n_risk_g <- as.matrix(df_events[, grep("n_risk_",names(df_events))])
   n_risk<-df_events$n_risk
   
   # test statistics
-  observed <- w %*% n_eventg
-  expected <- w %*% (n_riskg * (n_event / n_risk))
+  observed <- w %*% n_event_g
+  expected <- w %*% (n_risk_g * (n_event / n_risk))
   u <- (observed - expected)[, 2]
   
-  v_u <-w ^ 2 * (apply(n_riskg, 1, prod) * n_event * (n_risk - n_event)) / (n_risk ^ 2 * (n_risk - 1))
+  v_u <-w ^ 2 * (apply(n_risk_g, 1, prod) * n_event * (n_risk - n_event)) / (n_risk ^ 2 * (n_risk - 1))
   v_u[n_risk == 1] <- 0
   v_u<-sum(v_u)
   
   z = u / sqrt(v_u)
   
-  out <- list(
+  out <- data.frame(
     u = as.vector((observed - expected)[, 2]),
     v_u = as.vector(v_u),
     z = as.vector(z),
