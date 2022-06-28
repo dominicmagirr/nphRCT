@@ -10,7 +10,7 @@
 #' @template s_star
 #' @template rho
 #' @template gamma
-#' @params include_cens
+#' @template include_cens
 #' @return Data frame. Each row corresponds to an event time (including censoring times if `include_cens=TRUE`).
 #' At each time specified in `t_j` the columns indicate
 #' - `n_risk` number at risk just before time `t_j`
@@ -65,19 +65,17 @@ find_weights<-function(formula,
                            gamma = NULL,
                        include_cens=TRUE){
 
+  check_formula(formula=formula,data=data)
   formula_vars <- all.vars(formula)
   time_col <- formula_vars[1]
   status_col <- formula_vars[2]
- 
   Terms <- terms(formula,"strata")
   strata_index <- survival::untangle.specials(Terms,"strata")$terms
   if(length(strata_index)>0){stop("Function does not account for strata")}
   
   #Find weights
   wlr <- match.arg(wlr, c("lr", "fh", "mw"))
-
   Surv <- survival::Surv
-  Y <- eval(formula[[2]], data) ##formula[[2]] takes lhs
   formula_km<-as.formula(paste0("Surv(",time_col,",",status_col,")~1"))
   km_fit <- survival::survfit(formula_km,
                                 data = data,
@@ -99,22 +97,15 @@ find_weights<-function(formula,
   S_hat_minus <- c(1, S_hat[1:(length(S_hat) - 1)])
   
   if (wlr == "lr") {
+    check_lr(rho=rho,gamma=gamma,t_star=t_star,s_star=s_star)
     w <- rep(1, length(S_hat_minus))
   }
   if (wlr == "fh") {
-    if (is.null(rho) ||
-        is.null(gamma))
-      stop("Must specify rho and gamma")
-    if (rho < 0 ||
-        gamma < 0)
-      stop("rho and gamma must be non-negative")
-
+    check_fh(rho=rho,gamma=gamma,t_star=t_star,s_star=s_star)
     w <- S_hat_minus ^ rho * (1 - S_hat_minus) ^ gamma
   }
   if (wlr == "mw") {
-    if (is.null(t_star) && is.null(s_star)) stop("must specify either t_star or s_star")
-    if (!is.null(t_star) && !is.null(s_star)) stop("must specify either t_star or s_star (not both)")
-
+    check_mw(rho=rho,gamma=gamma,t_star=t_star,s_star=s_star)
     if (!is.null(t_star)){
       if (any(t_j < t_star)) {
         w <- pmin(1 / S_hat_minus,
