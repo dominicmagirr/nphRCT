@@ -13,7 +13,7 @@
 #' @template s_star
 #' @template rho
 #' @template gamma
-#' @return Data frame containing output from function `find_weights` and additional columns:
+#' @return Data frame containing output from function `find_weights` and also additional columns:
 #' 
 #' - `score_cens` the scores for each censoring at time `t_j` in the permutation test formulation
 #' - `score_event` the scores for each event at time `t_j` in the permutation test formulation
