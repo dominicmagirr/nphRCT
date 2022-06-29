@@ -63,7 +63,7 @@ find_weights<-function(formula,
                            s_star = NULL,
                            rho = NULL,
                            gamma = NULL,
-                       include_cens=TRUE){
+                           include_cens=TRUE){
 
   check_formula(formula=formula,data=data)
   formula_vars <- all.vars(formula)
