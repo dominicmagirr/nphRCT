@@ -64,11 +64,12 @@ sim_data <- sim_events_delay(
   rec_power = 1,
   max_cal_t = 36
 )
-find_scores(formula=Surv(event_time,event_status)~group,
+df_scores<-find_scores(formula=Surv(event_time,event_status)~group,
   data=sim_data,
   wlr="mw",
   t_star = 4
 )
+plot(df_scores)
 }
 \references{
 Magirr, D. (2021).
