@@ -74,12 +74,47 @@ for (df_weights in
 
 #Test errors
 
+test_that("specifying rho with lr test", {
+  expect_error(find_weights(formula=Surv(event_time,event_status)~group,
+                            data=sim_data,
+                            wlr="lr",
+                            rho = 0),
+               "do not specify rho or gamma for log rank test")
+})
+
+test_that("specifying t_star with lr test", {
+  expect_error(find_weights(formula=Surv(event_time,event_status)~group,
+                            data=sim_data,
+                            wlr="lr",
+                            t_star=4),
+               "do not specify t_star or s_star for log rank test ")
+})
+
+test_that("specifying rho with Fleming Harrington", {
+  expect_error(find_weights(formula=Surv(event_time,event_status)~group,
+                            data=sim_data,
+                            wlr="mw",
+                            rho = 0,
+                            t_star=4),
+               "do not specify rho or gamma for modestly weighted log rank test")
+})
+
 test_that("null gamma with Fleming Harrington", {
   expect_error(find_weights(formula=Surv(event_time,event_status)~group,
                             data=sim_data,
                             wlr="fh",
                             rho = 0),
                "specify rho and gamma")
+})
+
+test_that("specify t_star with Fleming Harrington", {
+  expect_error(find_weights(formula=Surv(event_time,event_status)~group,
+                            data=sim_data,
+                            wlr="fh",
+                            rho = 0,
+                            gamma=1,
+                            t_star=4),
+               "do not specify t_star or s_star for Fleming-Harrington test")
 })
 test_that("negative gamma with Fleming Harrington", {
   expect_error(find_weights(formula=Surv(event_time,event_status)~group,
@@ -89,6 +124,7 @@ test_that("negative gamma with Fleming Harrington", {
                             gamma=-1),
                "rho and gamma must be non-negative")
 })
+
 test_that("s_star not a probability", {
   expect_error(find_weights(formula=Surv(event_time,event_status)~group,
                             data=sim_data,

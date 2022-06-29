@@ -66,3 +66,15 @@ test_that("example with 2 strata", {
          t_star = 4
     )), "out_strata_2.RDS",cran = TRUE)
 })
+
+
+#Test errors
+
+test_that("specifying rho with lr test", {
+  expect_error(wlrt(formula=Surv(event_time,event_status)~group+sex+strata(ecog),
+                    data=sim_data_strata_2,
+                    wlr="mw",
+                    t_star = 4
+  ),
+               "One treatment arm indicator must be specified in formula")
+})
