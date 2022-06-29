@@ -3,3 +3,6 @@ man-roxygen
 ^doc$
 ^Meta$
 ^.*\.Rproj$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
