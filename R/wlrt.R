@@ -112,7 +112,7 @@ wlrt <- function(formula,
   }
   
   if (length(group_col)!=1) {
-     stop("One treatment arm indicator must be specified in formula")
+     stop("Formula must contain only one treatment arm indicator. All other terms must be specified as strata.")
   }
   data[[group_col]]<-as.factor(data[[group_col]])
     
@@ -128,6 +128,9 @@ wlrt <- function(formula,
   formula<-as.formula(paste0("Surv(",time_col,",",status_col,") ~ ",group_col))
   for (str in strata_col){data[[str]]<-paste0(str, data[[str]])}
   data_strata<-split(data, data[,strata_col])
+  if (min(purrr::map_dbl(data_strata, function(x)dim(x)[1])) < 5){
+    stop("Minimum stratum size is 5. Consider merging strata.")
+  }
   test_w<-purrr::map_df(data_strata,
                               wlrt_strata,
                               formula=formula,
