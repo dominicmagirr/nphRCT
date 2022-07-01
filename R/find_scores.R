@@ -123,10 +123,8 @@ find_scores<-function(formula,
   df$standardized_score <- df$score * A + B
   ############################################
   
-  
-  
-  df$rank<-paste0("(",nrow(df):1,")")
-
+  df$rank<-factor(df$t_j)
+  levels(df$rank)<-paste0("(",1:length(unique(df$t_j)),")")
   out<-list(df=df)
   class(out)<-"wlrt_score"
   out
