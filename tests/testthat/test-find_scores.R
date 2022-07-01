@@ -16,9 +16,11 @@ df_scores<-find_scores(formula=Surv(event_time,event_status)~group,
   t_star = 4
 )
 
+
+df<-df_scores$df
 test_that("should add to zero by definition", {
-  expect_equal(sum(df_scores$df$n_event*df_scores$df$score_event)+
-                 sum(df_scores$df$n_censor*df_scores$df$score_cens), 0)
+  expect_equal(sum(c(rowSums(df[,grep("n_event_",names(df))])*df$score_event+
+                 rowSums(df[,grep("n_censored_",names(df))])*df$score_censored)), 0)
 })
 
 save_png <- function(code) {
