@@ -122,14 +122,5 @@ find_weights<-function(formula,
     }
   }
 
-  out<-data.frame(t_j,
-                  n_risk,
-                  n_event,
-                  n_censor,
-                  S_hat,
-                  S_hat_minus,
-                  w=w
-  )
-
-  out
+  w
 }
