@@ -1,5 +1,5 @@
 ---
-title: "Weighted log-rank tests"
+title: "The weighted log-rank test"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{weighted_log_rank_tests}
@@ -14,87 +14,33 @@ knitr::opts_chunk$set(
 )
 ```
 
-See Magirr and Burman (2019) and Magirr (2021) for details about the weighted log-rank tests, and in particular the modestly weighted log-rank test. This vignette simply contains a summary of the formulae used within this package.
-
-Firstly, the general definition of the weighted log-rank test is provided. Consider the ordered, distinct event times $t_1, \dots, t_k$. Let $d_{0,j}$ and $d_{1,j}$ be the number of events at event time $t_{j}$ on each of the arms respectively, and let $d_{j}$ be equal to the sum of these two values. Similarly, let $n_{0,j}$ and $n_{1,j}$ be the number at risk at event time $t_{j}$ on each of the arms respectively, and let $n_{j}$ be equal to the sum of these two values. At each time $t_{j}$, we evaluate the observed number of events on one arm, $d_{0,j}$, and the expected number of events on the same arm, $d_j \frac{n_{0,j}}{n_j}$. The test statistic $U$ is then a weighted sum of the difference of these values, i.e.
-
-\[
-U = \sum_{j=1}^k w_j \left(d_{0,j} - d_j \frac{n_{0,j}}{n_j}\right)
-\]
-
-The weights $w_j$ that are used depend on the type of weighted log-rank test. These are described in the next section.
-
-Under the assumption that the survival curves of the two treatment arms are equal, the distribution of $U$ is
-
-\[
-U \sim N\left( 0, \sum_{j=1}^k w_j^2\frac{n_{0,j}n_{1,j} d_j (n_j - d_j)}{n_j^2(n_j-1)}\right)
-\]
+See Magirr and Burman (2019) and Magirr (2021) for details about the weighted log-rank tests, and in particular the modestly weighted log-rank test. This vignette works through an example of using the package to simulate data and perform weighted log-rank tests. A summary of the formulas used within this package is presented.
 
 
-## Weights
+## Simulate a dataset
 
-- The standard log-rank test uses weights:
-\[
-w_j=1
-\]
+This package can be used to simulate a dataset for a two-arm RCT with delayed separation of survival curves by using the `sim_events_delay` function. 
 
-- The Fleming-Harrington ($\rho$,$\gamma$) test uses weights:
-\[
-w_j = \hat{S}(t_{j}-) ^ \rho * (1 - \hat{S}(t_{j}-)) ^ \gamma
-\]
-where $\hat{S}(t)$ is the Kaplan Meier estimate of the survival curve in the pooled data (both treatment arms) and time $t_j-$ is the time just before $t_j$. 
-There is the matter of choosing $\rho$ and $\gamma$. A popular choice is $\rho=0$ and $\gamma=1$ which means that the weights are equal to 1 minus the Kaplan Meier estimate of the survival curve.
-
-- The modestly weighted log-rank test uses weights:
-\[
-w_j = 1 / \max{\{\hat{S}(t_{j}-), \hat{S}(t^\ast)\}}
-\]
-There is the matter of choosing $t^\ast$ or alternatively choosing the value of $\hat{S}(t^\ast)$. See Magirr (2021) for a discussion on this.
-
-
-### Stratification
-
-
-
-## Permutation test and scores
-
-Leton and Zuluaga (2001) showed that every weighted log-rank test can be written as either
-an observed-minus-expected test (as described above), or as a permutation test.
-
-
-The weights can be rewritten as scores for a permutation test using the following formulae for the censoring scores and event scores respectively:
-
-\[
-C_j=-\sum_{i=1}w_i\frac{d_i}{n_i}
-\]
-
-\[
-c_j=C_j+w_j
-\]
-
-
-## Using the package
-
-
-First, we simulate some data using the `sim_events_delay` function. 
-
-This function simulates a dataset for a two-arm RCT with delayed separation of survival curves. The survival times on the control arm
-follow an exponential distribution, and the survival times on the experimental arm follow a two-piece exponential distribution.
-Given rate parameter $\lambda$, the exponential distribution has the form:
+The simulation method assumes that the survival times on the control arm follow an exponential distribution, and the survival times on the experimental arm follow a two-piece exponential distribution. Given rate parameter $\lambda$, the exponential distribution has the form:
 
 \[
 f(t)=\lambda \exp(-\lambda t)
 \]
 
-Recruitment onto the trial is modeled using the power model
+These rate parameters are set using the argument `lambda_c` for the control arm, `lambda_e_1` for the first part of the experimental arm, and `lambda_e_2` for the second part of the experimental arm.
+
+The simulation method also models recruitment onto the trial, so that individuals are entered into the trial at some point after calendar time 0. Specifically, the power model is used
+
 \[
 P(\mathrm{recruited\ before\ T}) = (\mathrm{T} / \mathrm{rec\_period}) ^ \mathrm{rec\_power}
 \]
+
 where
 $\mathrm{rec\_period}$ is the time at the end of recruitment period, and $\mathrm{rec\_power}$ controls the rate of recruitment.
 
-This means that participants enter the trial at calendar times after time 0. However, all observations are censored at the calendar time `max_cal_t`.
+The simulation method in the `sim_events_delay` function also requires that the user sets a parameter `max_cal_t`, the calendar time at which all observations are censored.
 
+Here we create a simulated dataset with 5 individuals on each arm. Assume that one unit of time is equal to one month. From entering the study until 6 months both arms have the same $\lambda$ parameter, with a median event time of 9 months. From 6 months, the experimental arm has a lower hazard rate, with a median event time of 18 months. Setting `rec_period = 12` and `rec_power = 1` means that individuals are recruited at a uniform rate over 12 months.
 
 ```{r 1}
 library(wlrt)
@@ -113,15 +59,168 @@ sim_data <- sim_events_delay(
 sim_data
 ```
 
+## Performing a weighted log-rank test
 
-```{r find_scores}
-scores_out<-find_scores(data=sim_data,
-  formula=Surv(event_time,event_status)~group,
+Now that we have simulated a dataset, we will look at performing the weighted log-rank tests.
+
+Consider the ordered, distinct event times $t_1, \dots, t_k$. Let $d_{0,j}$ and $d_{1,j}$ be the number of events at event time $t_{j}$ on each of the arms respectively, and let $d_{j}$ be equal to the sum of these two values. Similarly, let $n_{0,j}$ and $n_{1,j}$ be the number at risk at event time $t_{j}$ on each of the arms respectively, and let $n_{j}$ be equal to the sum of these two values. 
+
+The function `find_at_risk` can be used to calculate these values for a dataset.
+
+```{r 2}
+find_at_risk(formula=Surv(event_time,event_status)~group,
+  data=sim_data,
+  include_cens=FALSE)
+```
+
+Here, each row relates to the distinct event times $t_j$, which are specified in column `t_j`. The value $d_{0,j}$ relates to the column `n_event_control`, $d_{1,j}$ to `n_event_experimental`, and $d_{j}$ to `n_event`. Similarly, $n_{0,j}$ relates to column `n_risk_control`, $n_{1,j}$ to `n_risk_experimental`, and $n_{j}$ to `n_risk`.
+
+To calculate the test statistics for a weighted log-rank test, we need to evaluate the observed number of events on one arm, e.g. $d_{0,j}$, and the expected number of events on the same arm, e.g. $d_j \frac{n_{0,j}}{n_j}$ at each $t_j$. The test statistic $U^W$ is then a weighted sum (using weights $w_j$) of the difference of these values:
+
+\[
+U^W = \sum_{j=1}^k w_j \left(d_{0,j} - d_j \frac{n_{0,j}}{n_j}\right)
+\]
+
+The weights $w_j$ that are used depend on the type of weighted log-rank test, these are described next.
+
+### Weights
+
+Three types of weighted log rank test are available in this package.
+
+- The standard log-rank test uses weights:
+\[
+w_j=1
+\]
+
+The values of the weights in the log-rank test can be calculated using the function `find_weights` with argument `wlr="lr"`. In the case of the standard log-rank test, the weights are clearly very simple.
+
+```{r 3}
+find_weights(formula=Surv(event_time,event_status)~group,
+  data=sim_data,
+  wlr="lr",
+  include_cens = FALSE)
+```
+
+- The Fleming-Harrington ($\rho$,$\gamma$) test uses weights:
+\[
+w_j = \hat{S}(t_{j}-) ^ \rho * (1 - \hat{S}(t_{j}-)) ^ \gamma
+\]
+where $\hat{S}(t)$ is the Kaplan Meier estimate of the survival curve in the pooled data (both treatment arms) and time $t_j-$ is the time just before $t_j$. 
+There is the matter of choosing $\rho$ and $\gamma$. A popular choice is $\rho=0$ and $\gamma=1$ which means that the weights are equal to 1 minus the Kaplan Meier estimate of the survival curve.
+
+Again the weights can be calculated using the `find_weights` function and setting `wlr="fh"`, along with arguments `rho` and `gamma`.
+
+```{r 4}
+find_weights(formula=Surv(event_time,event_status)~group,
+  data=sim_data,
+  wlr="fh",
+  rho = 0,
+  gamma= 1,
+  include_cens = FALSE)
+```
+
+- The modestly weighted log-rank test uses weights:
+\[
+w_j = 1 / \max{\{\hat{S}(t_{j}-), \hat{S}(t^\ast)\}}
+\]
+There is the matter of choosing $t^\ast$ or alternatively choosing the value of $\hat{S}(t^\ast)$. See Magirr (2021) for a discussion on this.
+
+
+```{r 5}
+find_weights(formula=Surv(event_time,event_status)~group,
+  data=sim_data,
   wlr="mw",
-  t_star = 3
-)
-plot(scores_out)
+  s_star = 0.5,
+  include_cens = FALSE)
+```
 
+### Test statistic and Z-statistic
+
+Under the null hypothesis that the survival curves of the two treatment arms are equal, the distribution of $U^W$ is
+
+\[
+U^W \sim N\left( 0, V^W \right)
+\]
+
+where the variance, $V^W$, is equal to 
+\[
+\sum_{j=1}^k w_j^2\frac{n_{0,j}n_{1,j} d_j (n_j - d_j)}{n_j^2(n_j-1)}
+\]
+
+The Z-statistic is then simply calculated in the usual way by dividing the test statistic $U$ by the square root of its variance.
+
+To perform the full weighted log-rank test, use the function `wlrt` which outputs the test statistic, its variance, the Z-statistic and the name of the treatment group (in column `group`) which is selected to calculate the observed and expected values for in the weighted log-rank test formula.
+
+```{r 6}
+wlrt(formula=Surv(event_time,event_status)~group,
+  data=sim_data,
+  wlr="mw",
+  s_star = 0.5)
+
+```
+
+## Permutation test and scores
+
+Leton and Zuluaga (2001) showed that every weighted log-rank test can be written as either
+an observed-minus-expected test (as described above), or as a permutation test.
+
+The weights can be reformulated as scores for a permutation test using the following formula for the censoring scores and event scores respectively:
+
+\[
+C_j=-\sum_{i=1}w_i\frac{d_i}{n_i}
+\]
+
+\[
+c_j=C_j+w_j
+\]
+
+These scores can be calculated using the function `find_scores` in the following way. Plotting these scores against the rank of the event times provides an intuitive explanation of the issues of using the Fleming-Harrington test, see Magirr (2021).
+
+```{r 7}
+df_scores_mw<-find_scores(formula=Surv(event_time,event_status)~group,
+  data=sim_data,
+  wlr="mw",
+  s_star = 0.5)
+plot(df_scores_mw)
+df_scores_fh<-find_scores(formula=Surv(event_time,event_status)~group,
+  data=sim_data,
+  wlr="fh",
+  rho = 0,
+  gamma=1)
+plot(df_scores_fh)
+```
+
+## Stratification
+
+The issue of stratification when performing weighted log-rank tests is discussed in Magirr and Jiménez (2022). They explore various approaches to combining the results of stratified analyses. In particular they recommend combining on the Z-statistic scale, i.e. for the case of two strata, first express the stratified log-rank test as a linear combination of standardized Z-statistics, $\sqrt{V_1}Z_1+\sqrt{V_2}Z_2 \sim N(0,V_1+V_2)$. $V_1$ and $V_2$ are the variances for the log-rank test statistic on the first and second stratum respectively, and $Z_1$ and $Z_2$ are the Z-statistics for the log-rank test statistic on the first and second stratum respectively. Secondly, the Z-statistics $Z_1$ and $Z_2$ are replaced by the Z-statistics from the weighted log-rank test.
+
+\[
+\tilde{U}^W=\sqrt{V_1}\left( \frac{U_1^W}{\sqrt{V_1^W}}\right)+\sqrt{V_2}\left( \frac{U_2^W}{\sqrt{V_2^W}}\right)
+\]
+
+Here we introduce a strata `ecog` that has different $\lambda$ parameters, and demonstrate that it is simple to perform the described stratified weighted log-rank test.
+
+```{r 8}
+sim_data_0 <- sim_data
+sim_data_0$ecog=0
+sim_data_1 <- sim_events_delay(
+  n_c = 5,
+  n_e = 5,
+  delay_e = 6,
+  lambda_c = log(2)/6,
+  lambda_e_1 = log(2)/6,
+  lambda_e_2 = log(2)/12,
+  rec_period = 12,
+  rec_power = 1,
+  max_cal_t = 36
+)
+sim_data_1$ecog=1
+sim_data_strata<-rbind(sim_data_0,sim_data_1)
+wlrt(formula=Surv(event_time,event_status)~group+strata(ecog),
+  data=sim_data_strata,
+  wlr="mw",
+  t_star = 4
+)
 ```
 
 ## References
