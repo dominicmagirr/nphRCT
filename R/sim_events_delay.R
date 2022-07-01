@@ -17,7 +17,7 @@
 #' @details
 #'
 #' Recruitment is modeled using the power model
-#' \eqn{P(recruited before T) = (T / rec_period) ^ rec_power}, where
+#' \eqn{P(recruited before T) = (T / rec\_period) ^ rec\_power}, where
 #' \eqn{rec_period} is the time at the end of recruitment period, and \eqn{rec_power} controls the rate of recruitment.
 #'
 #' Survival times are simulated from an exponential distribution with rate parameter \eqn{\lambda},
@@ -29,7 +29,7 @@
 #' @examples
 #' library(wlrt)
 #' set.seed(1)
-#' sim_data <- sim_events_delay(
+#' sim_events_delay(
 #'   n_c = 5,
 #'   n_e = 5,
 #'   delay_e = 6,
