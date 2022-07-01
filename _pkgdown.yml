@@ -1,0 +1,32 @@
+title: Weighted log-rank tests
+url:
+template:
+  params:
+    bootswatch: flatly
+reference:
+  - title: Functions
+    desc: Functions exported by MODIStsp
+    contents:
+      - '`sim_events_delay`'      
+      - '`find_at_risk`'
+      - '`find_weights`'
+      - '`find_scores`'
+      - '`wlrt`'
+navbar:
+  type: inverse
+  left:
+    - icon: fa-home
+      href: index.html
+    - text: "Background"
+      menu: 
+      -  text: Installation
+         href: articles/weighted_log_rank_tests.html
+    - text: "Examples of Use"
+      href: articles/weighted_log_rank_tests.html
+  right:
+    - icon: fa-file-code-o 
+      text: "functions"
+      href: reference/index.html
+    - icon: fa-github fa-lg
+      text: "github"
+      href: reference/index.html
