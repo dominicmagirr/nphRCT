@@ -15,7 +15,7 @@
 #' @template gamma
 #' @return Data frame containing output from function `find_weights` and also additional columns:
 #' 
-#' - `score_cens` the scores for each censoring at time `t_j` in the permutation test formulation
+#' - `score_censored` the scores for each censoring at time `t_j` in the permutation test formulation
 #' - `score_event` the scores for each event at time `t_j` in the permutation test formulation
 #' - `rank` the rank of the ordered event and censoring times, the higher the number the earlier the time `t_j`
 #' @details
@@ -74,8 +74,8 @@ find_scores<-function(formula,
   df <- find_at_risk(formula=formula,
                              data=data,
                              include_cens=TRUE)
-  df$score_cens<-with(df,-cumsum(w*(n_event/n_risk)))
-  df$score_event<-with(df,score_cens+w)
+  df$score_censored<-with(df,-cumsum(w*(n_event/n_risk)))
+  df$score_event<-with(df,score_censored+w)
   
   #####################################
   ## include treatment group (DM)
@@ -115,7 +115,7 @@ find_scores<-function(formula,
   df <- df_full
   ###########################################
   ## pick out score (event or censored) (DM)
-  df$score <- with(df, event * score_event + (1 - event) * score_cens)
+  df$score <- with(df, event * score_event + (1 - event) * score_censored)
   ## standardize scores to (-1, 1) (DM)
   max_a <- max(df$score)
   min_a <- min(df$score)
