@@ -60,33 +60,34 @@ find_scores<-function(formula,
                        t_star = NULL,
                        s_star = NULL,
                        rho = NULL,
-                       gamma = NULL,
-                       ...){
-  df<-find_weights(data=data,
-                 formula=formula,
+                       gamma = NULL){
+  
+  w<-find_weights(formula=formula,
+                 data=data,
                  wlr=wlr,
                  t_star = t_star,
                  s_star = s_star,
                  rho = rho,
                  gamma = gamma,
                  include_cens=TRUE)
-
+  
+  df <- find_at_risk(formula=formula,
+                             data=data,
+                             include_cens=TRUE)
   df$score_cens<-with(df,-cumsum(w*(n_event/n_risk)))
   df$score_event<-with(df,score_cens+w)
   
   #####################################
   ## include treatment group (DM)
-  df_at_risk <- find_at_risk(formula=formula,
-                             data=data,
-                             include_cens=TRUE)
+
+  formula_vars <- all.vars(formula)
+  group_col<-formula_vars[-(1:2)]
+  groups <- as.vector(sort(unique(data[[group_col]])))
   
-  df_at_risk$n_censored_control <- rev(diff(rev(c(df_at_risk$n_risk_control,0))) - rev(df_at_risk$n_event_control))
-  df_at_risk$n_censored_experimental <- rev(diff(rev(c(df_at_risk$n_risk_experimental,0))) - rev(df_at_risk$n_event_experimental))
-  
-  df$n_event_control <- df_at_risk$n_event_control
-  df$n_event_experimental <- df_at_risk$n_event_experimental
-  df$n_censored_control <- df_at_risk$n_censored_control
-  df$n_censored_experimental <- df_at_risk$n_censored_experimental
+  for (i in 1:2){
+    df[[paste0("n_censored_",groups[i])]] <- 
+      rev(diff(rev(c(df[[paste0("n_risk_",groups[i])]],0))) - rev(df[[paste0("n_event_",groups[i])]]))
+  }
   
   ###########################################
   ## replicate rows with ties (DM)
@@ -136,15 +137,11 @@ find_scores<-function(formula,
 plot.wlrt_score<-function(x,...){
   df<-x$df
   df$x_pos<-1:nrow(df)
-  #df_cens<-df[df$n_censor>0,]
-  #df_event<-df[df$n_event>0,]
+  
   df_experimental_cens<-df[df$group == "experimental" & df$event == 0,]
   df_experimental_event<-df[df$group == "experimental" & df$event == 1,]
   df_control_cens<-df[df$group == "control" & df$event == 0,]
   df_control_event<-df[df$group == "control" & df$event == 1,]
-  
-  #args <- list(ylim=c(min(df_cens$score_cens, df_event$score_event)-0.5,
-  #                    max(df_cens$score_cens, df_event$score_event)+0.5))
   
   args <- list(ylim=c(-1,1))
   
@@ -155,9 +152,6 @@ plot.wlrt_score<-function(x,...){
                       type="n",xlab="Rank",xaxt="n",ylab="Score"),args))
   
   axis(side=1, labels=df$rank, at=df$x_pos)
-  
-  #points(x=df_cens$x_pos,y=df_cens$score_cens,pch=21,bg="white")
-  #points(x=df_event$x_pos,y=df_event$score_event,pch=21,bg="black")
   
   points(x=df_experimental_cens$x_pos,y=df_experimental_cens$standardized_score,pch=21,bg="white")
   points(x=df_experimental_event$x_pos,y=df_experimental_event$standardized_score,pch=21,bg="black")
