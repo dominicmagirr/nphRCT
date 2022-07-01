@@ -25,6 +25,19 @@ sim_data_1 <- sim_events_delay(
 sim_data_1$ecog=1
 sim_data_strata<-rbind(sim_data_0,sim_data_1)
 sim_data_strata_2<-cbind(sim_data_strata,sex=rep(c("M","F"),times=100))
+sim_data_2 <- sim_events_delay(
+  n_c = 2,
+  n_e = 2,
+  delay_e = 6,
+  lambda_c = log(2)/6,
+  lambda_e_1 = log(2)/6,
+  lambda_e_2 = log(2)/12,
+  rec_period = 12,
+  rec_power = 1,
+  max_cal_t = 36
+)
+sim_data_strata_2<-cbind(sim_data_strata,sex=rep(c("M","F"),times=100))
+sim_data_strata_small<-rbind(sim_data_0,cbind(sim_data_2,ecog=1))
 
 
 save_file <- function(code) {
@@ -70,11 +83,20 @@ test_that("example with 2 strata", {
 
 #Test errors
 
-test_that("specifying rho with lr test", {
+test_that("only one treatment arm indicator", {
   expect_error(wlrt(formula=Surv(event_time,event_status)~group+sex+strata(ecog),
                     data=sim_data_strata_2,
                     wlr="mw",
                     t_star = 4
   ),
-               "One treatment arm indicator must be specified in formula")
+  "Formula must contain only one treatment arm indicator")
+})
+
+test_that("Minimum stratum size is 5", {
+  expect_error(wlrt(formula=Surv(event_time,event_status)~group+strata(ecog),
+                    data=sim_data_strata_small,
+                    wlr="mw",
+                    t_star = 4
+  ),
+  "Minimum stratum size is 5")
 })
