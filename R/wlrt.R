@@ -179,7 +179,7 @@ wlrt_strata <- function(formula,
                   s_star = s_star,
                   rho = rho,
                   gamma = gamma,
-                  include_cens=FALSE)$w
+                  include_cens=FALSE)
 
   #at risk tables
   df_events<-find_at_risk(formula=formula,
