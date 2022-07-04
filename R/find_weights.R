@@ -11,15 +11,9 @@
 #' @template rho
 #' @template gamma
 #' @template include_cens
-#' @return Data frame. Each row corresponds to an event time (including censoring times if `include_cens=TRUE`).
-#' At each time specified in `t_j` the columns indicate
-#' - `n_risk` number at risk just before time `t_j`
-#' - `n_event` number of events at time `t_j`
-#' - `n_censor` number of censored at time `t_j`
-#' - `S_hat` Kaplan Meier survival estimate at time `t_j`
-#' - `S_hat_minus` Kaplan Meier survival estimate just before time `t_j`
-#' - `w` weights for the observed minus expected value in the weighted log-rank test
-#'
+#' @return Vector. Weights for the observed minus expected value in the weighted log-rank test.
+#' The elements correspond to the ordered, distinct event times (including censoring times if 
+#' `include_cens=TRUE`).
 #' @details
 #'
 #' Select which of the three tests to perform using argument `wlr`.
