@@ -59,7 +59,7 @@ find_at_risk<-function(formula,
   groups <- as.vector(sort(unique(data[[group_col]])))
   if (length(groups)!=2){stop("Only 2 treatment groups allowed")}
   
-  data<-data[order(data$event_time),]
+  data<-data[order(data[[time_col]]),]
   trt <- data[[group_col]]
   times <- data[[time_col]]
   d_j <- data[[status_col]]

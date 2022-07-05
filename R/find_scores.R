@@ -122,12 +122,24 @@ find_scores<-function(formula,
 #' @export
 plot.wlrt_score<-function(x,...){
   df<-x$df
-  df$x_pos<-1:length(unique(df$rank))
   
-  df_experimental_cens<-df[df$group == "experimental" & df$event == 0,]
-  df_experimental_event<-df[df$group == "experimental" & df$event == 1,]
-  df_control_cens<-df[df$group == "control" & df$event == 0,]
-  df_control_event<-df[df$group == "control" & df$event == 1,]
+  ## suggested changes (DM)
+  #df$x_pos<-1:length(unique(df$rank))
+  df$x_pos<-1:length(df$rank)
+  
+  # df_experimental_cens<-df[df$group == "experimental" & df$event == 0,]
+  # df_experimental_event<-df[df$group == "experimental" & df$event == 1,]
+  # df_control_cens<-df[df$group == "control" & df$event == 0,]
+  # df_control_event<-df[df$group == "control" & df$event == 1,]
+  
+  group_labels <- unique(df$group)
+  gl1 <- group_labels[1]
+  gl2 <- group_labels[2]
+  
+  df_gl1_cens<-df[df$group == gl1 & df$event == 0,]
+  df_gl1_event<-df[df$group == gl1 & df$event == 1,]
+  df_gl2_cens<-df[df$group == gl2 & df$event == 0,]
+  df_gl2_event<-df[df$group == gl2 & df$event == 1,]
   
   args <- list(ylim=c(-1,1))
   
@@ -141,8 +153,12 @@ plot.wlrt_score<-function(x,...){
   
   mycol_blue <- rgb(0, 0, 255, max = 255, alpha = 100)
   mycol_red <- rgb(255, 0, 0, max = 255, alpha = 100)
-  points(x=df_control_event$x_pos,y=df_control_event$standardized_score,pch=15,col=mycol_red,cex=1)
-  points(x=df_control_cens$x_pos,y=df_control_cens$standardized_score,pch=0,col=mycol_red,cex=1)
-  points(x=df_experimental_event$x_pos,y=df_experimental_event$standardized_score,pch=16,col=mycol_blue,cex=1)
-  points(x=df_experimental_cens$x_pos,y=df_experimental_cens$standardized_score,pch=1,col=mycol_blue,cex=1)
+  #points(x=df_control_event$x_pos,y=df_control_event$standardized_score,pch=15,col=mycol_red,cex=1)
+  #points(x=df_control_cens$x_pos,y=df_control_cens$standardized_score,pch=0,col=mycol_red,cex=1)
+  #points(x=df_experimental_event$x_pos,y=df_experimental_event$standardized_score,pch=16,col=mycol_blue,cex=1)
+  #points(x=df_experimental_cens$x_pos,y=df_experimental_cens$standardized_score,pch=1,col=mycol_blue,cex=1)
+  points(x=df_gl1_event$x_pos,y=df_gl1_event$standardized_score,pch=15,col=mycol_red,cex=1)
+  points(x=df_gl1_cens$x_pos,y=df_gl1_cens$standardized_score,pch=0,col=mycol_red,cex=1)
+  points(x=df_gl2_event$x_pos,y=df_gl2_event$standardized_score,pch=16,col=mycol_blue,cex=1)
+  points(x=df_gl2_cens$x_pos,y=df_gl2_cens$standardized_score,pch=1,col=mycol_blue,cex=1)
 }
