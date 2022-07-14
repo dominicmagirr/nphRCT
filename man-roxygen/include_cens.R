@@ -1,1 +1,1 @@
-#' @param include_cens Boolean indicating whether to include rows corresponding to censored events
+#' @param include_cens Boolean indicating whether to include values corresponding to censoring times
