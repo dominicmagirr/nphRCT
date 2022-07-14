@@ -9,7 +9,7 @@ check_formula<-function(formula,data){
   }
   formula_vars <- all.vars(formula)
   if (any(is.na(data[, formula_vars]))) {
-    stop("NAs in data set. wlrt doesn't have a default for missing data.")
+    stop("NAs in data set, no default for missing data.")
   }  
 }
 
