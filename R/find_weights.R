@@ -11,26 +11,32 @@
 #' @template rho
 #' @template gamma
 #' @template include_cens
-#' @return Vector. Weights for the observed minus expected value in the weighted log-rank test.
-#' The elements correspond to the ordered, distinct event times (including censoring times if 
+#' @return Vector of weights in the weighted log-rank test.
+#' The weights correspond to the ordered, distinct event times (and censoring times if 
 #' `include_cens=TRUE`).
+#'
 #' @details
 #'
 #' Select which of the three tests to perform using argument `wlr`.
 #' The output is calculated as outlined in `vignette("weighted_log_rank_tests", package="wlrt")`.
-#'
+#' 
+#' For the weighted log rank tests, the weights are
+#' multiplied by the observed minus expected value at each event time.
+#' The weights that correspond to censoring times are therefore not used in the weighted log-rank test, 
+#' however they are used in the `find_scores` function.
+#' 
 #' @examples
 #' library(wlrt)
 #' set.seed(1)
+#' rec_c <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
+#' rec_e <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
 #' sim_data <- sim_events_delay(
-#'   n_c = 5,
-#'   n_e = 5,
 #'   delay_e = 6,
 #'   lambda_c = log(2)/9,
 #'   lambda_e_1 = log(2)/9,
 #'   lambda_e_2 = log(2)/18,
-#'   rec_period = 12,
-#'   rec_power = 1,
+#'   rec_times_c = rec_c,
+#'   rec_times_e = rec_e,
 #'   max_cal_t = 36
 #' )
 #' #example setting t_star
@@ -57,7 +63,7 @@ find_weights<-function(formula,
                            s_star = NULL,
                            rho = NULL,
                            gamma = NULL,
-                           include_cens=TRUE){
+                           include_cens=FALSE){
 
   check_formula(formula=formula,data=data)
   formula_vars <- all.vars(formula)
