@@ -11,8 +11,7 @@ find_scores(
   t_star = NULL,
   s_star = NULL,
   rho = NULL,
-  gamma = NULL,
-  ...
+  gamma = NULL
 )
 }
 \arguments{
@@ -32,11 +31,18 @@ The terms (on the right of the \code{~} operator) must include the treatment arm
 \item{gamma}{Parameter \eqn{\gamma} in the Fleming-Harrington (\code{"fh"}) test, see Details.}
 }
 \value{
-Data frame containing output from function \code{find_weights} and also additional columns:
+Data frame. Each row corresponds to an event time (including censoring times if \code{include_cens=TRUE}).
+At each time specified in \code{t_j} the columns indicate
 \itemize{
-\item \code{score_cens} the scores for each censoring at time \code{t_j} in the permutation test formulation
+\item \code{score_censored} the scores for each censoring at time \code{t_j} in the permutation test formulation
 \item \code{score_event} the scores for each event at time \code{t_j} in the permutation test formulation
-\item \code{rank} the rank of the ordered event and censoring times, the higher the number the earlier the time \code{t_j}
+\item \code{event} the event indicator
+\item \code{group} the treatment arm indicator
+\item \code{score} the value of the score for this individual, equal to \code{score_censored} if the individual is censored
+and equal to \code{score_event} if the individual experienced the event
+\item \code{standardized_score} the value of \code{score} standardized to be between -1 and 1
+\item \code{rank} the rank of the ordered event and censoring times, with higher numbers indicating
+later times \code{t_j}
 }
 }
 \description{
@@ -53,15 +59,15 @@ The output is calculated as outlined in \code{vignette("weighted_log_rank_tests"
 \examples{
 library(wlrt)
 set.seed(1)
+rec_c <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
+rec_e <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
 sim_data <- sim_events_delay(
-  n_c = 5,
-  n_e = 5,
   delay_e = 6,
   lambda_c = log(2)/9,
   lambda_e_1 = log(2)/9,
   lambda_e_2 = log(2)/18,
-  rec_period = 12,
-  rec_power = 1,
+  rec_times_c = rec_c,
+  rec_times_e = rec_e,
   max_cal_t = 36
 )
 df_scores<-find_scores(formula=Surv(event_time,event_status)~group,

@@ -12,7 +12,7 @@ find_weights(
   s_star = NULL,
   rho = NULL,
   gamma = NULL,
-  include_cens = TRUE
+  include_cens = FALSE
 )
 }
 \arguments{
@@ -31,19 +31,12 @@ The terms (on the right of the \code{~} operator) must include the treatment arm
 
 \item{gamma}{Parameter \eqn{\gamma} in the Fleming-Harrington (\code{"fh"}) test, see Details.}
 
-\item{include_cens}{Boolean indicating whether to include rows corresponding to censored events}
+\item{include_cens}{Boolean indicating whether to include values corresponding to censoring times}
 }
 \value{
-Data frame. Each row corresponds to an event time (including censoring times if \code{include_cens=TRUE}).
-At each time specified in \code{t_j} the columns indicate
-\itemize{
-\item \code{n_risk} number at risk just before time \code{t_j}
-\item \code{n_event} number of events at time \code{t_j}
-\item \code{n_censor} number of censored at time \code{t_j}
-\item \code{S_hat} Kaplan Meier survival estimate at time \code{t_j}
-\item \code{S_hat_minus} Kaplan Meier survival estimate just before time \code{t_j}
-\item \code{w} weights for the observed minus expected value in the weighted log-rank test
-}
+Vector of weights in the weighted log-rank test.
+The weights correspond to the ordered, distinct event times (and censoring times if
+\code{include_cens=TRUE}).
 }
 \description{
 This function can perform two types of weighted log-rank test,
@@ -52,19 +45,24 @@ the modestly-weighted log-rank test and the Fleming-Harrington (\eqn{\rho},\eqn{
 \details{
 Select which of the three tests to perform using argument \code{wlr}.
 The output is calculated as outlined in \code{vignette("weighted_log_rank_tests", package="wlrt")}.
+
+For the weighted log rank tests, the weights are
+multiplied by the observed minus expected value at each event time.
+The weights that correspond to censoring times are therefore not used in the weighted log-rank test,
+however they are used in the \code{find_scores} function.
 }
 \examples{
 library(wlrt)
 set.seed(1)
+rec_c <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
+rec_e <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
 sim_data <- sim_events_delay(
-  n_c = 5,
-  n_e = 5,
   delay_e = 6,
   lambda_c = log(2)/9,
   lambda_e_1 = log(2)/9,
   lambda_e_2 = log(2)/18,
-  rec_period = 12,
-  rec_power = 1,
+  rec_times_c = rec_c,
+  rec_times_e = rec_e,
   max_cal_t = 36
 )
 #example setting t_star

@@ -5,22 +5,16 @@
 \title{Simulate survival data from a two-arm trial with a delayed separation of survival curves}
 \usage{
 sim_events_delay(
-  n_c,
-  n_e,
   delay_e,
   lambda_c,
   lambda_e_1,
   lambda_e_2,
-  rec_period,
-  rec_power,
+  rec_times_c,
+  rec_times_e,
   max_cal_t
 )
 }
 \arguments{
-\item{{n_c}}{Number of patients on control treatment.}
-
-\item{{n_e}}{Number of patients on experimental treatment.}
-
 \item{{delay_e}}{Length of first period of the experimental arm.}
 
 \item{{lambda_c}}{Rate of exponential distribution  of the control arm.}
@@ -29,9 +23,9 @@ sim_events_delay(
 
 \item{{lambda_e_2}}{Rate of exponential distribution during second period of the experimental arm.}
 
-\item{{rec_period}}{Parameter used to model recruitment according to power model, see Details.}
+\item{{rec_times_c}}{Recruitment times on the control arm with each value corresponding to one individual}
 
-\item{{rec_power}}{Parameter used to model recruitment according to power model, see Details.}
+\item{{rec_times_e}}{Recruitment times on the experimental arm with each value corresponding to one individual}
 
 \item{{max_cal_t}}{Calendar time at which the trial ends, all observations are censored at this time.}
 }
@@ -44,10 +38,6 @@ Survival times on the control arm are simulated from an exponential distribution
 Survival times on the experimental arm are simulated from a two-piece exponential distribution.
 }
 \details{
-Recruitment is modeled using the power model
-\eqn{P(recruited before T) = (T / rec\_period) ^ rec\_power}, where
-\eqn{rec_period} is the time at the end of recruitment period, and \eqn{rec_power} controls the rate of recruitment.
-
 Survival times are simulated from an exponential distribution with rate parameter \eqn{\lambda},
 \eqn{f(t)=\lambda exp(-\lambda t)}. This distribution has a median value of \eqn{log(2)/\lambda};
 this can be a useful fact when setting the rates \code{lambda_c}, \code{lambda_e_1}, \code{lambda_e_2}.
@@ -57,15 +47,15 @@ All observations are censored at the calendar time defined in argument \code{max
 \examples{
 library(wlrt)
 set.seed(1)
-sim_events_delay(
-  n_c = 5,
-  n_e = 5,
+rec_c <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
+rec_e <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
+sim_data <- sim_events_delay(
   delay_e = 6,
   lambda_c = log(2)/9,
   lambda_e_1 = log(2)/9,
   lambda_e_2 = log(2)/18,
-  rec_period = 12,
-  rec_power = 1,
+  rec_times_c = rec_c,
+  rec_times_e = rec_e,
   max_cal_t = 36
 )
 }

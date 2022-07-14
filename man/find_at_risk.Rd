@@ -12,21 +12,21 @@ The terms (on the right of the \code{~} operator) must include the treatment arm
 
 \item{data}{Data frame containing time-to-event data.}
 
-\item{include_cens}{Boolean indicating whether to include rows corresponding to censored events}
+\item{include_cens}{Boolean indicating whether to include values corresponding to censoring times}
 }
 \value{
 Data frame containing columns (in order):
 \itemize{
-\item event time \code{t_j}
-\item number of events in each of the treatments at event time \code{t_j}
+\item time \code{t_j}
+\item number of events in each of the treatments at \code{t_j}
 \item combined number of events in both treatments at event time \code{t_j}
 \item number of individuals at risk in each of the treatment groups just before time \code{t_j}
 \item combined number of individuals at risk in both treatment groups just before time \code{t_j}
 }
 }
 \description{
-This function calculates the number of individuals at risk and number of events at each time
-an event occurs (and censoring if \code{include_cens==TRUE}).
+This function calculates the number of individuals at risk and number of events at each distinct event time
+(and censoring time if \code{include_cens==TRUE}).
 }
 \details{
 
@@ -34,22 +34,22 @@ an event occurs (and censoring if \code{include_cens==TRUE}).
 \examples{
 library(wlrt)
 set.seed(1)
-sim_data <- sim_events_delay(
-  n_c = 5,
-  n_e = 5,
+rec_c <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
+rec_e <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
+sim_data<-sim_events_delay(
   delay_e = 6,
   lambda_c = log(2)/9,
   lambda_e_1 = log(2)/9,
   lambda_e_2 = log(2)/18,
-  rec_period = 12,
-  rec_power = 1,
+  rec_times_c = rec_c,
+  rec_times_e = rec_e,
   max_cal_t = 36
 )
-#with censoring included
+#with censoring times included
 find_at_risk(formula=Surv(event_time,event_status)~group,
   data=sim_data,
   include_cens=TRUE)
-#with censoring excluded
+#with censoring times excluded
 find_at_risk(formula=Surv(event_time,event_status)~group,
   data=sim_data,
   include_cens=FALSE)
