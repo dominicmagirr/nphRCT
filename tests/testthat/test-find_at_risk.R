@@ -1,12 +1,12 @@
+rec_c <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5000)
+rec_e <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5000)
 sim_data <- sim_events_delay(
-  n_c = 5000,
-  n_e = 5000,
   delay_e = 6,
   lambda_c = log(2)/9,
   lambda_e_1 = log(2)/9,
   lambda_e_2 = log(2)/18,
-  rec_period = 12,
-  rec_power = 1,
+  rec_times_c = rec_c,
+  rec_times_e = rec_e,
   max_cal_t = 36
 )
 #with censoring included

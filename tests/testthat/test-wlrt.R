@@ -1,39 +1,39 @@
+rec_c <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=50)
+rec_e <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=50)
 sim_data <- sim_events_delay(
-  n_c = 50,
-  n_e = 50,
   delay_e = 6,
   lambda_c = log(2)/9,
   lambda_e_1 = log(2)/9,
   lambda_e_2 = log(2)/18,
-  rec_period = 12,
-  rec_power = 1,
+  rec_times_c = rec_c,
+  rec_times_e = rec_e,
   max_cal_t = 36
 )
 sim_data_0 <- sim_data
 sim_data_0$ecog=0
+rec_c <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=50)
+rec_e <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=50)
 sim_data_1 <- sim_events_delay(
-  n_c = 50,
-  n_e = 50,
   delay_e = 6,
-  lambda_c = log(2)/6,
-  lambda_e_1 = log(2)/6,
-  lambda_e_2 = log(2)/12,
-  rec_period = 12,
-  rec_power = 1,
+  lambda_c = log(2)/9,
+  lambda_e_1 = log(2)/9,
+  lambda_e_2 = log(2)/18,
+  rec_times_c = rec_c,
+  rec_times_e = rec_e,
   max_cal_t = 36
 )
 sim_data_1$ecog=1
 sim_data_strata<-rbind(sim_data_0,sim_data_1)
 sim_data_strata_2<-cbind(sim_data_strata,sex=rep(c("M","F"),times=100))
+rec_c <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=2)
+rec_e <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=2)
 sim_data_2 <- sim_events_delay(
-  n_c = 2,
-  n_e = 2,
   delay_e = 6,
-  lambda_c = log(2)/6,
-  lambda_e_1 = log(2)/6,
-  lambda_e_2 = log(2)/12,
-  rec_period = 12,
-  rec_power = 1,
+  lambda_c = log(2)/9,
+  lambda_e_1 = log(2)/9,
+  lambda_e_2 = log(2)/18,
+  rec_times_c = rec_c,
+  rec_times_e = rec_e,
   max_cal_t = 36
 )
 sim_data_strata_2<-cbind(sim_data_strata,sex=rep(c("M","F"),times=100))
@@ -100,3 +100,4 @@ test_that("Minimum stratum size is 5", {
   ),
   "Minimum stratum size is 5")
 })
+
