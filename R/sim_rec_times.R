@@ -1,6 +1,6 @@
 #' Simulate recruitment times
 #'
-#' Simulate recruitment times from either a power model or a piecewise exponential model
+#' Simulate recruitment times from either a power model or a piecewise constant model
 #'
 #' @param{rec_model} Character string specifying the type of recruitment model. Either the power model `"power"` 
 #' or piecewise constant `"pw_constant"`.
@@ -62,13 +62,13 @@ sim_rec_times<-function(rec_model,
                         rec_period=NULL,
                         rec_rate=NULL,
                         rec_duration=NULL){
-  rec_model <- match.arg(rec_model, c("power", "exp"))
+  rec_model <- match.arg(rec_model, c("power", "pw_constant"))
   
   if(rec_model=="power"){
     rec <- rec_period * runif(n)^(1/rec_power)
     return(rec)
   }
-  if(rec_model=="exp"){
+  if(rec_model=="pw_constant"){
     if(any(rec_rate<0)){stop("rec_rate should be non-negative")}
     if(length(rec_rate)==1){#simple case with only one rate
       rec<-cumsum(stats::rexp(n=n,rate=rec_rate))
