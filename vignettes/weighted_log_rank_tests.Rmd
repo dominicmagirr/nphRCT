@@ -19,9 +19,13 @@ See Magirr and Burman (2019) and Magirr (2021) for details about the weighted lo
 
 ## Simulate a dataset
 
-This package can be used to simulate a dataset for a two-arm RCT with delayed separation of survival curves by using the `sim_events_delay` function. 
+This package can be used to simulate a dataset for a two-arm RCT with delayed separation of survival curves by using the `sim_events_delay` function.
 
-The simulation method assumes that the survival times on the control arm follow an exponential distribution, and the survival times on the experimental arm follow a two-piece exponential distribution. Given rate parameter $\lambda$, the exponential distribution has the form:
+This function requires the user to input recruitment times of the patients through
+parameters `rec_c` and `rec_e`. These can be simulated using the function `sim_rec_times` which offers
+recruitment time simulation via either a piecewise constant model or a power model.
+
+The function `sim_events_delay` assumes that the survival times on the control arm follow an exponential distribution, and the survival times on the experimental arm follow a two-piece exponential distribution. Given rate parameter $\lambda$, the exponential distribution has the form:
 
 \[
 f(t)=\lambda \exp(-\lambda t)
@@ -29,41 +33,32 @@ f(t)=\lambda \exp(-\lambda t)
 
 These rate parameters are set using the argument `lambda_c` for the control arm, `lambda_e_1` for the first part of the experimental arm, and `lambda_e_2` for the second part of the experimental arm.
 
-The simulation method also models recruitment onto the trial, so that individuals are entered into the trial at some point after calendar time 0. Specifically, the power model is used
-
-\[
-P(\mathrm{recruited\ before\ T}) = (\mathrm{T} / \mathrm{rec\_period}) ^ \mathrm{rec\_power}
-\]
-
-where
-$\mathrm{rec\_period}$ is the time at the end of recruitment period, and $\mathrm{rec\_power}$ controls the rate of recruitment.
-
-The simulation method in the `sim_events_delay` function also requires that the user sets a parameter `max_cal_t`, the calendar time at which all observations are censored.
+The `sim_events_delay` function requires that the user sets a parameter `max_cal_t`, this is the calendar time at which all observations are censored.
 
 Here we create a simulated dataset with 5 individuals on each arm. Assume that one unit of time is equal to one month. From entering the study until 6 months both arms have the same $\lambda$ parameter, with a median event time of 9 months. From 6 months, the experimental arm has a lower hazard rate, with a median event time of 18 months. Setting `rec_period = 12` and `rec_power = 1` means that individuals are recruited at a uniform rate over 12 months.
 
 ```{r 1}
 library(wlrt)
 set.seed(1)
+rec_c <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
+rec_e <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
 sim_data <- sim_events_delay(
-  n_c = 5,
-  n_e = 5,
   delay_e = 6,
   lambda_c = log(2)/9,
   lambda_e_1 = log(2)/9,
   lambda_e_2 = log(2)/18,
-  rec_period = 12,
-  rec_power = 1,
+  rec_times_c = rec_c,
+  rec_times_e = rec_e,
   max_cal_t = 36
 )
 sim_data
 ```
 
-## Performing a weighted log-rank test
+## Weighted log-rank tests
 
 Now that we have simulated a dataset, we will look at performing the weighted log-rank tests.
 
-Consider the ordered, distinct event times $t_1, \dots, t_k$. Let $d_{0,j}$ and $d_{1,j}$ be the number of events at event time $t_{j}$ on each of the arms respectively, and let $d_{j}$ be equal to the sum of these two values. Similarly, let $n_{0,j}$ and $n_{1,j}$ be the number at risk at event time $t_{j}$ on each of the arms respectively, and let $n_{j}$ be equal to the sum of these two values. 
+Consider the ordered, distinct event times $t_1, \dots, t_k$. Let $d_{0,j}$ and $d_{1,j}$ be the number of events at event time $t_{j}$ on each of the arms respectively, and let $d_{j}$ be equal to the sum of these two values. Similarly, let $n_{0,j}$ and $n_{1,j}$ be the number at risk at event time $t_{j}$ on each of the arms respectively, and let $n_{j}$ be equal to the sum of these two values.
 
 The function `find_at_risk` can be used to calculate these values for a dataset.
 
@@ -103,9 +98,9 @@ find_weights(formula=Surv(event_time,event_status)~group,
 
 - The Fleming-Harrington ($\rho$,$\gamma$) test uses weights:
 \[
-w_j = \hat{S}(t_{j}-) ^ \rho * (1 - \hat{S}(t_{j}-)) ^ \gamma
+w_j = \hat{S}(t_{j}-) ^ \rho (1 - \hat{S}(t_{j}-)) ^ \gamma
 \]
-where $\hat{S}(t)$ is the Kaplan Meier estimate of the survival curve in the pooled data (both treatment arms) and time $t_j-$ is the time just before $t_j$. 
+where $\hat{S}(t)$ is the Kaplan Meier estimate of the survival curve in the pooled data (both treatment arms) and time $t_j-$ is the time just before $t_j$.
 There is the matter of choosing $\rho$ and $\gamma$. A popular choice is $\rho=0$ and $\gamma=1$ which means that the weights are equal to 1 minus the Kaplan Meier estimate of the survival curve.
 
 Again the weights can be calculated using the `find_weights` function and setting `wlr="fh"`, along with arguments `rho` and `gamma`.
@@ -134,7 +129,7 @@ find_weights(formula=Surv(event_time,event_status)~group,
   include_cens = FALSE)
 ```
 
-### Test statistic and Z-statistic
+### Test statistic 
 
 Under the null hypothesis that the survival curves of the two treatment arms are equal, the distribution of $U^W$ is
 
@@ -142,7 +137,7 @@ Under the null hypothesis that the survival curves of the two treatment arms are
 U^W \sim N\left( 0, V^W \right)
 \]
 
-where the variance, $V^W$, is equal to 
+where the variance, $V^W$, is equal to
 \[
 \sum_{j=1}^k w_j^2\frac{n_{0,j}n_{1,j} d_j (n_j - d_j)}{n_j^2(n_j-1)}
 \]
@@ -159,7 +154,7 @@ wlrt(formula=Surv(event_time,event_status)~group,
 
 ```
 
-## Permutation test and scores
+### Permutation test and scores
 
 Leton and Zuluaga (2001) showed that every weighted log-rank test can be written as either
 an observed-minus-expected test (as described above), or as a permutation test.
@@ -190,7 +185,7 @@ df_scores_fh<-find_scores(formula=Surv(event_time,event_status)~group,
 plot(df_scores_fh)
 ```
 
-## Stratification
+### Stratification
 
 The issue of stratification when performing weighted log-rank tests is discussed in Magirr and Jiménez (2022). They explore various approaches to combining the results of stratified analyses. In particular they recommend combining on the Z-statistic scale, i.e. for the case of two strata, first express the stratified log-rank test as a linear combination of standardized Z-statistics, $\sqrt{V_1}Z_1+\sqrt{V_2}Z_2 \sim N(0,V_1+V_2)$. $V_1$ and $V_2$ are the variances for the log-rank test statistic on the first and second stratum respectively, and $Z_1$ and $Z_2$ are the Z-statistics for the log-rank test statistic on the first and second stratum respectively. Secondly, the Z-statistics $Z_1$ and $Z_2$ are replaced by the Z-statistics from the weighted log-rank test.
 
@@ -203,15 +198,15 @@ Here we introduce a strata `ecog` that has different $\lambda$ parameters, and d
 ```{r 8}
 sim_data_0 <- sim_data
 sim_data_0$ecog=0
+rec_c <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
+rec_e <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
 sim_data_1 <- sim_events_delay(
-  n_c = 5,
-  n_e = 5,
   delay_e = 6,
   lambda_c = log(2)/6,
   lambda_e_1 = log(2)/6,
   lambda_e_2 = log(2)/12,
-  rec_period = 12,
-  rec_power = 1,
+  rec_times_c = rec_c,
+  rec_times_e = rec_e,
   max_cal_t = 36
 )
 sim_data_1$ecog=1
@@ -224,8 +219,8 @@ wlrt(formula=Surv(event_time,event_status)~group+strata(ecog),
 ```
 
 ## References
-Leton, E. and Zuluaga, P. (2001) 
-Equivalence between score and weighted tests for survival curves. 
+Leton, E. and Zuluaga, P. (2001)
+Equivalence between score and weighted tests for survival curves.
 Commun Stat., 30(4), 591-608.
 
 Magirr, D. (2021).
