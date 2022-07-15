@@ -7,6 +7,7 @@ reference:
   - title: Functions
     desc: Functions exported by MODIStsp
     contents:
+      - '`sim_rec_times`'      
       - '`sim_events_delay`'      
       - '`find_at_risk`'
       - '`find_weights`'
@@ -17,12 +18,10 @@ navbar:
   left:
     - icon: fa-home
       href: index.html
-    - text: "Background"
+    - text: "Vignettes"
       menu: 
-      -  text: Installation
+      -  text: "Worked example"
          href: articles/weighted_log_rank_tests.html
-    - text: "Examples of Use"
-      href: articles/weighted_log_rank_tests.html
   right:
     - icon: fa-file-code-o 
       text: "functions"
