@@ -9,7 +9,7 @@ sim_rec_times(
   n = NULL,
   rec_power = NULL,
   rec_period = NULL,
-  rec_lambda = NULL,
+  rec_rate = NULL,
   rec_duration = NULL
 )
 }
@@ -23,7 +23,7 @@ or piecewise exponential \code{"exp"}.}
 
 \item{{rec_period}}{Parameter used to model recruitment according to power model, see Details.}
 
-\item{{rec_lambda}}{Parameter used to model recruitment according to piecewise exponential model, see Details.}
+\item{{rec_rate}}{Parameter used to model recruitment according to piecewise exponential model, see Details.}
 
 \item{{rec_duration}}{Parameter used to model recruitment according to piecewise exponential model, see Details.}
 }
@@ -34,11 +34,26 @@ or piecewise exponential \code{"exp"}.}
 Simulate recruitment times from either a power model or a piecewise exponential model
 }
 \details{
-Recruitment is modeled using either the power model or the piecewise exponential model.
+Recruitment is modeled using either the power model or the piecewise constant model.
 
 The power model is defined as:
 \eqn{P(recruited before T) = (T / rec_period) ^ rec_power}, where
 \eqn{rec_period} is the time at the end of recruitment period, and \eqn{rec_power} controls the rate of recruitment.
+
+Alternatively, recruitment can be modelled using the piecewise constant model.
+In the simple case with only one time period defined in \code{rec_duration}, the times between each of the individuals entering follow-up
+are \code{n} samples from the exponential distribution with rate parameter \eqn{\lambda},
+\eqn{f(t)=\lambda exp(-\lambda t)}. The function returns \code{n} recruitment times, regardless of the
+length of duration \code{rec_duration.}
+
+In the case with multiple time periods defined in \code{rec_duration}, the number of events in each period is sampled from the
+Poisson distribution \eqn{P(K=k)=\lambda^k \exp{-\lambda}/k!}, where \eqn{k} is the number of events and the rate parameter
+\eqn{\lambda} is equal to \code{rec_rate} multiplied by the duration of the period in \code{rec_duration}. The recruitment times
+are then sampled uniformly from the period.
+
+In the case with multiple time period, fixing the number of events \code{n} is optional. In the case that \code{n} is fixed, and
+insufficient recruitment times have been simulated by the end of the last duration, the additional recruitment times will be
+simulated after the end of the last period using the method described for only one time period.
 }
 \examples{
 library(wlrt)
@@ -50,11 +65,11 @@ sim_rec_times(n=10,
   rec_power=1)
 #piecewise exponential model, where duration is set
 sim_rec_times(rec_model="exp",
-          rec_lambda=c(1,2),
+          rec_rate=c(1,2),
           rec_duration=c(12,8))
 #piecewise exponential model, where number of events is set
 sim_rec_times(rec_model="exp",
-          rec_lambda=c(1,2),
+          rec_rate=c(1,2),
           rec_duration=c(12,8),
           n=10)
 }
