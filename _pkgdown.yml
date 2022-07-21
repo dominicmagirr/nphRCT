@@ -22,6 +22,8 @@ navbar:
       menu: 
       -  text: "Worked example"
          href: articles/weighted_log_rank_tests.html
+      -  text: "Survival tests as differences-of-means"
+         href: articles/explanation.html
   right:
     - icon: fa-file-code-o 
       text: "functions"
