@@ -12,8 +12,16 @@ RoxygenNote: 7.1.1
 Suggests: 
     knitr,
     rmarkdown,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    dplyr,
+    cowplot,
+    survminer
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Depends: 
     R (>= 2.10)
+Imports:
+    ggplot2,
+    purrr,
+    survival
+LazyData: true
