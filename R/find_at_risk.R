@@ -6,16 +6,16 @@
 #' @template formula
 #' @template data
 #' @template include_cens
-#' @return Data frame containing columns (in order): 
+#' @return Data frame 
 #' 
+#' @details
+#' Returns a data frame with the following columns:
 #' - time `t_j` 
 #' - number of events in each of the treatments at `t_j`
 #' - combined number of events in both treatments at event time `t_j`
 #' - number of individuals at risk in each of the treatment groups just before time `t_j`
 #' - combined number of individuals at risk in both treatment groups just before time `t_j`
 #' 
-#' @details
-#'
 #' @examples
 #' library(wlrt)
 #' set.seed(1)
@@ -50,7 +50,7 @@ find_at_risk<-function(formula,
   time_col <- formula_vars[1]
   status_col <- formula_vars[2]
   terms_vars<-formula_vars[-(1:2)]
-  Terms <- terms(formula,"strata")
+  Terms <- stats::terms(formula,"strata")
   strata_index <- survival::untangle.specials(Terms,"strata")$terms
   if (length(strata_index)>0){stop("Function does not account for strata")}
 
@@ -71,7 +71,7 @@ find_at_risk<-function(formula,
       n_event_g[, i] <- (trt == groups[i])*d_j
     }
     n_event_g<-data.frame(times,n_event_g)
-    n_event_g<-aggregate(. ~ times, n_event_g, FUN = sum)[,-1]
+    n_event_g<-stats::aggregate(. ~ times, n_event_g, FUN = sum)[,-1]
     
     #number at risk
     t_j<-unique(times)
