@@ -5,7 +5,7 @@ rmst1<-function(time, status, tau, alpha=0.05){
   #-- tau -- truncation time
   #-- alpha -- gives (1-alpha) confidence interval
   
-  ft= survfit(Surv(time, status)~1)
+  ft= survival::survfit(Surv(time, status)~1)
   idx=ft$time<=tau
   
   wk.time=sort(c(ft$time[idx],tau))
@@ -29,7 +29,7 @@ rmst1<-function(time, status, tau, alpha=0.05){
   
   #--- output ---
   out=matrix(0,2,4)
-  out[1,]=c(rmst, rmst.se, rmst-qnorm(1-alpha/2)*rmst.se, rmst+qnorm(1-alpha/2)*rmst.se)
+  out[1,]=c(rmst, rmst.se, rmst-stats::qnorm(1-alpha/2)*rmst.se, rmst+stats::qnorm(1-alpha/2)*rmst.se)
   out[2,]=c(tau-out[1,1], rmst.se, tau-out[1,4], tau-out[1,3])
   rownames(out)=c("RMST","RMTL")
   colnames(out)=c("Est.", "se", paste("lower .",round((1-alpha)*100, digits=0), sep=""), 
@@ -50,18 +50,19 @@ rmst1<-function(time, status, tau, alpha=0.05){
 
 find_pseudovalues <- function(formula,
                               data,
-                              method = "RMST",
+                              method,
                               tau = 1){
 
+  method<-match.arg(method,c("rmst","ms"))
+  
   ### extract terms from formula
   check_formula(formula=formula,data=data)
-  Surv<-survival::Surv
   
   formula_vars <- all.vars(formula)
   time_col <- formula_vars[1]
   status_col <- formula_vars[2]
   terms_vars<-formula_vars[-(1:2)]
-  Terms <- terms(formula,"strata")
+  Terms <- stats::terms(formula,"strata")
   strata_index <- survival::untangle.specials(Terms,"strata")$terms
   
   if (length(strata_index)>0){
@@ -74,40 +75,70 @@ find_pseudovalues <- function(formula,
   if (length(group_col)!=1) {
     stop("Formula must contain only one treatment arm indicator. All other terms must be specified as strata.")
   }
+
   data[[group_col]]<-as.factor(data[[group_col]])
   
-  
-  rmst_full <- rmst1(time = data[[time_col]],
-                     status = data[[status_col]],
-                     tau = tau)$rmst[1]
-  n <- length(data[[time_col]])
-  
-  ### also need the size of each arm...
-  
-  p_v_rmst <- numeric(length(dat[[time_col]]))
-  
-  for (i in seq_along(p_v_rmst)){
-    data_minus_i <- data[-i,]
+  if(method=="rmst"){
+    rmst_full <- rmst1(time = data[[time_col]],
+                       status = data[[status_col]],
+                       tau = tau)$rmst[1]
+    n <- nrow(data)
     
-    rmst_minus_i <- rmst1(time = data_minus_i[[time_col]],
-                          status = data_minus_i[[status_col]],
-                          tau = tau)$rmst[1]
+    ### also need the size of each arm...
     
-    p_v_rmst[i] <- n * rmst_full - (n - 1) * rmst_minus_i
+    p_v_rmst <- numeric(nrow(data))
     
+    for (i in seq_along(p_v_rmst)){
+      data_minus_i <- data[-i,]
+      
+      rmst_minus_i <- rmst1(time = data_minus_i[[time_col]],
+                            status = data_minus_i[[status_col]],
+                            tau = tau)$rmst[1]
+      
+      p_v_rmst[i] <- n * rmst_full - (n - 1) * rmst_minus_i
+      
+    }
+  
+    df_rmst_pseudo <- data.frame(t_j = data[[time_col]],
+                                 event = data[[status_col]],
+                                 group = data[[group_col]],
+                                 score = -p_v_rmst )
+    df_rmst_pseudo<-df_rmst_pseudo[order(df_rmst_pseudo[["t_j"]]),]
+    
+    return(df_rmst_pseudo)
   }
-  
-  max_p <- max(-p_v_rmst)
-  min_p <- min(-p_v_rmst)
-  
-  A = 2 / (max_p - min_p)
-  B = 1 - A * max_p
-  
-  df_rmst_pseudo <- data.frame(time = data[[time_col]],
-                               event = data[[status_col]],
-                               arm = data[[group_col]],
-                               scores = -p_v_rmst * A + B)
-  
-  
-  df_rmst_pseudo
+  if(method=="ms"){
+    Surv<-survival::Surv
+    
+    n <- length(data[[time_col]])
+    
+    ### non-parametric estimate of survival
+    formula_km<-stats::as.formula(paste0("Surv(",time_col,",",status_col,")~1"))
+    surv <- survival::survfit(formula_km, data = data)
+    
+    s_full <- summary(surv, time = tau)$surv
+    
+    p_v_surv <- numeric(length(data[[time_col]]))
+    
+    for (i in seq_along(p_v_surv)){
+      
+      df_minus_i <- data[-i,]
+      
+      ### non-parametric estimate of survival probability at tau
+      formula_km<-stats::as.formula(paste0("Surv(",time_col,",",status_col,")~1"))
+      surv_minus_i <- survival::survfit(formula_km, data = df_minus_i)
+      s_full_minus_i <- summary(surv_minus_i, time = tau)$surv
+      
+      p_v_surv[i] <- n * s_full - (n - 1) * s_full_minus_i
+      
+    }
+    df_milestone_pseudo <- data.frame(t_j = data[[time_col]],
+                                 event = data[[status_col]],
+                                 group = data[[group_col]],
+                                 score = -p_v_surv )
+    df_milestone_pseudo<-df_milestone_pseudo[order(df_milestone_pseudo[["t_j"]]),]
+    
+    return(df_milestone_pseudo)
+  }
 }
+
