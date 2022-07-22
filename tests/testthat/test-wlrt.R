@@ -50,7 +50,7 @@ test_that("example setting t_star", {
   expect_snapshot_file(save_file(	
     wlrt(formula=Surv(event_time,event_status)~group,
          data=sim_data,
-         wlr="mw",
+         method="mw",
          t_star = 4
     )), "out_t_star.RDS",cran = TRUE)
 })
@@ -58,7 +58,7 @@ test_that("example setting s_star", {
   expect_snapshot_file(save_file(	
     wlrt(formula=Surv(event_time,event_status)~group,
          data=sim_data,
-         wlr="mw",
+         method="mw",
          s_star = 0.5
     )), "out_s_star.RDS",cran = TRUE)
 })
@@ -66,7 +66,7 @@ test_that("example with 1 strata", {
   expect_snapshot_file(save_file(	
     wlrt(formula=Surv(event_time,event_status)~group+strata(ecog),
          data=sim_data_strata,
-         wlr="mw",
+         method="mw",
          t_star = 4
     )), "out_strata.RDS",cran = TRUE)
 })
@@ -75,7 +75,7 @@ test_that("example with 2 strata", {
   expect_snapshot_file(save_file(	
     wlrt(formula=Surv(event_time,event_status)~group+strata(ecog)+strata(sex),
          data=sim_data_strata_2,
-         wlr="mw",
+         method="mw",
          t_star = 4
     )), "out_strata_2.RDS",cran = TRUE)
 })
@@ -86,7 +86,7 @@ test_that("example with 2 strata", {
 test_that("only one treatment arm indicator", {
   expect_error(wlrt(formula=Surv(event_time,event_status)~group+sex+strata(ecog),
                     data=sim_data_strata_2,
-                    wlr="mw",
+                    method="mw",
                     t_star = 4
   ),
   "Formula must contain only one treatment arm indicator")
@@ -95,7 +95,7 @@ test_that("only one treatment arm indicator", {
 test_that("Minimum stratum size is 5", {
   expect_error(wlrt(formula=Surv(event_time,event_status)~group+strata(ecog),
                     data=sim_data_strata_small,
-                    wlr="mw",
+                    method="mw",
                     t_star = 4
   ),
   "Minimum stratum size is 5")
