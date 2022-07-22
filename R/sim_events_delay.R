@@ -4,13 +4,13 @@
 #' Survival times on the control arm are simulated from an exponential distribution.
 #' Survival times on the experimental arm are simulated from a two-piece exponential distribution.
 #'
-#' @param{delay_e} Length of first period of the experimental arm.
-#' @param{lambda_c} Rate of exponential distribution  of the control arm.
-#' @param{lambda_e_1} Rate of exponential distribution during first period of the experimental arm.
-#' @param{lambda_e_2} Rate of exponential distribution during second period of the experimental arm.
-#' @param{rec_times_c} Recruitment times on the control arm with each value corresponding to one individual
-#' @param{rec_times_e} Recruitment times on the experimental arm with each value corresponding to one individual 
-#' @param{max_cal_t} Calendar time at which the trial ends, all observations are censored at this time.
+#' @param delay_e Length of first period of the experimental arm.
+#' @param lambda_c Rate of exponential distribution  of the control arm.
+#' @param lambda_e_1 Rate of exponential distribution during first period of the experimental arm.
+#' @param lambda_e_2 Rate of exponential distribution during second period of the experimental arm.
+#' @param rec_times_c Recruitment times on the control arm with each value corresponding to one individual
+#' @param rec_times_e Recruitment times on the experimental arm with each value corresponding to one individual 
+#' @param max_cal_t Calendar time at which the trial ends, all observations are censored at this time.
 #' @return Data frame with columns `event_time`, `event_status` (`1` = event, `0` = censored), and treatment arm indicator `group`.
 #' @details
 #'
@@ -51,10 +51,10 @@ sim_events_delay<-function(
 
   n_c=length(rec_times_c)
   n_e=length(rec_times_e)
-  t_c = rexp(n_c, rate = lambda_c)
+  t_c = stats::rexp(n_c, rate = lambda_c)
   
-  t_1_e = rexp(n_e, rate = lambda_e_1)
-  t_2_e = rexp(n_e, rate = lambda_e_2)
+  t_1_e = stats::rexp(n_e, rate = lambda_e_1)
+  t_2_e = stats::rexp(n_e, rate = lambda_e_2)
   t_e = ifelse(t_1_e < delay_e, t_1_e, delay_e + t_2_e)
   cal_t_c = rec_times_c + t_c
   cal_t_e = rec_times_e + t_e
