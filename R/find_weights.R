@@ -5,7 +5,9 @@
 #'
 #' @template formula
 #' @template data
-#' @template wlr
+#' @param method Character string specifying type of weighted log-rank test. 
+#' Either `"lr"` for a standard log-rank test, `"mw"` for a modestly-weighted log-rank test, 
+#' or `"fh"` for the Fleming-Harrington rho-gamma family.
 #' @template t_star
 #' @template s_star
 #' @template rho
@@ -17,7 +19,7 @@
 #'
 #' @details
 #'
-#' Select which of the three tests to perform using argument `wlr`.
+#' Select which of the three tests to perform using argument `method`.
 #' The output is calculated as outlined in `vignette("weighted_log_rank_tests", package="wlrt")`.
 #' 
 #' For the weighted log rank tests, the weights are
@@ -42,7 +44,7 @@
 #' #example setting t_star
 #' find_weights(formula=Surv(event_time,event_status)~group,
 #'   data=sim_data,
-#'   wlr="mw",
+#'   method="mw",
 #'   t_star = 4
 #' )
 #' @references
@@ -58,7 +60,7 @@
 
 find_weights<-function(formula,
                            data,
-                           wlr,
+                           method,
                            t_star = NULL,
                            s_star = NULL,
                            rho = NULL,
@@ -69,14 +71,14 @@ find_weights<-function(formula,
   formula_vars <- all.vars(formula)
   time_col <- formula_vars[1]
   status_col <- formula_vars[2]
-  Terms <- terms(formula,"strata")
+  Terms <- stats::terms(formula,"strata")
   strata_index <- survival::untangle.specials(Terms,"strata")$terms
   if(length(strata_index)>0){stop("Function does not account for strata")}
   
   #Find weights
-  wlr <- match.arg(wlr, c("lr", "fh", "mw"))
+  method <- match.arg(method, c("lr", "fh", "mw"))
   Surv <- survival::Surv
-  formula_km<-as.formula(paste0("Surv(",time_col,",",status_col,")~1"))
+  formula_km<-stats::as.formula(paste0("Surv(",time_col,",",status_col,")~1"))
   km_fit <- survival::survfit(formula_km,
                                 data = data,
                                 timefix = FALSE)
@@ -96,15 +98,15 @@ find_weights<-function(formula,
   }
   S_hat_minus <- c(1, S_hat[1:(length(S_hat) - 1)])
   
-  if (wlr == "lr") {
+  if (method == "lr") {
     check_lr(rho=rho,gamma=gamma,t_star=t_star,s_star=s_star)
     w <- rep(1, length(S_hat_minus))
   }
-  if (wlr == "fh") {
+  if (method == "fh") {
     check_fh(rho=rho,gamma=gamma,t_star=t_star,s_star=s_star)
     w <- S_hat_minus ^ rho * (1 - S_hat_minus) ^ gamma
   }
-  if (wlr == "mw") {
+  if (method == "mw") {
     check_mw(rho=rho,gamma=gamma,t_star=t_star,s_star=s_star)
     if (!is.null(t_star)){
       if (any(t_j < t_star)) {
