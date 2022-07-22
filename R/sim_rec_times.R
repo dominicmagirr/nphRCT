@@ -2,14 +2,14 @@
 #'
 #' Simulate recruitment times from either a power model or a piecewise constant model
 #'
-#' @param{rec_model} Character string specifying the type of recruitment model. Either the power model `"power"` 
+#' @param rec_model Character string specifying the type of recruitment model. Either the power model `"power"` 
 #' or piecewise constant `"pw_constant"`.
-#' @param{n} Number of recruitment times to simulate
-#' @param{rec_power} Parameter used to model recruitment according to power model, see Details. 
-#' @param{rec_period} Parameter used to model recruitment according to power model, see Details. 
-#' @param{rec_rate}  Parameter used to model recruitment according to piecewise constant model, see Details. 
-#' @param{rec_duration} Parameter used to model recruitment according to piecewise constant model, see Details. 
-#' @return 
+#' @param n Number of recruitment times to simulate
+#' @param rec_power Parameter used to model recruitment according to power model, see Details. 
+#' @param rec_period Parameter used to model recruitment according to power model, see Details. 
+#' @param rec_rate  Parameter used to model recruitment according to piecewise constant model, see Details. 
+#' @param rec_duration Parameter used to model recruitment according to piecewise constant model, see Details. 
+#' @return Vector of recruitment times
 #' @details
 #'
 #' Recruitment is modeled using either the power model or the piecewise constant model. 
@@ -65,7 +65,7 @@ sim_rec_times<-function(rec_model,
   rec_model <- match.arg(rec_model, c("power", "pw_constant"))
   
   if(rec_model=="power"){
-    rec <- rec_period * runif(n)^(1/rec_power)
+    rec <- rec_period * stats::runif(n)^(1/rec_power)
     return(rec)
   }
   if(rec_model=="pw_constant"){
