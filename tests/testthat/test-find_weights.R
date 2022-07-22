@@ -11,32 +11,32 @@ sim_data <- sim_events_delay(
 )
 weights_mw<-find_weights(formula=Surv(event_time,event_status)~group,
                             data=sim_data,
-                            wlr="mw",
+                            method="mw",
                             t_star = 4
 )
 weights_mw_s_star<-find_weights(formula=Surv(event_time,event_status)~group,
                                    data=sim_data,
-                                   wlr="mw",
+                                   method="mw",
                                    s_star = 0.5
 )
 weights_mw_0<-find_weights(formula=Surv(event_time,event_status)~group,
                               data=sim_data,
-                              wlr="mw",
+                              method="mw",
                               t_star = 0
 )
 weights_cens<-find_weights(formula=Surv(event_time,event_status)~group,
                               data=sim_data,
-                              wlr="mw",
+                              method="mw",
                               t_star = 0,
                               include_cens=FALSE
 )
 weights_lr<-find_weights(formula=Surv(event_time,event_status)~group,
                          data=sim_data,
-                         wlr="lr"
+                         method="lr"
 )
 weights_fh<-find_weights(formula=Surv(event_time,event_status)~group,
                          data=sim_data,
-                         wlr="fh",
+                         method="fh",
                          rho = 0,
                          gamma=1
 )
@@ -59,7 +59,7 @@ for (weights in
 test_that("specifying rho with lr test", {
   expect_error(find_weights(formula=Surv(event_time,event_status)~group,
                             data=sim_data,
-                            wlr="lr",
+                            method="lr",
                             rho = 0),
                "do not specify rho or gamma for log rank test")
 })
@@ -67,7 +67,7 @@ test_that("specifying rho with lr test", {
 test_that("specifying t_star with lr test", {
   expect_error(find_weights(formula=Surv(event_time,event_status)~group,
                             data=sim_data,
-                            wlr="lr",
+                            method="lr",
                             t_star=4),
                "do not specify t_star or s_star for log rank test ")
 })
@@ -75,7 +75,7 @@ test_that("specifying t_star with lr test", {
 test_that("specifying rho with Fleming Harrington", {
   expect_error(find_weights(formula=Surv(event_time,event_status)~group,
                             data=sim_data,
-                            wlr="mw",
+                            method="mw",
                             rho = 0,
                             t_star=4),
                "do not specify rho or gamma for modestly weighted log rank test")
@@ -84,7 +84,7 @@ test_that("specifying rho with Fleming Harrington", {
 test_that("null gamma with Fleming Harrington", {
   expect_error(find_weights(formula=Surv(event_time,event_status)~group,
                             data=sim_data,
-                            wlr="fh",
+                            method="fh",
                             rho = 0),
                "specify rho and gamma")
 })
@@ -92,7 +92,7 @@ test_that("null gamma with Fleming Harrington", {
 test_that("specify t_star with Fleming Harrington", {
   expect_error(find_weights(formula=Surv(event_time,event_status)~group,
                             data=sim_data,
-                            wlr="fh",
+                            method="fh",
                             rho = 0,
                             gamma=1,
                             t_star=4),
@@ -101,7 +101,7 @@ test_that("specify t_star with Fleming Harrington", {
 test_that("negative gamma with Fleming Harrington", {
   expect_error(find_weights(formula=Surv(event_time,event_status)~group,
                             data=sim_data,
-                            wlr="fh",
+                            method="fh",
                             rho = 0,
                             gamma=-1),
                "rho and gamma must be non-negative")
@@ -110,7 +110,7 @@ test_that("negative gamma with Fleming Harrington", {
 test_that("s_star not a probability", {
   expect_error(find_weights(formula=Surv(event_time,event_status)~group,
                             data=sim_data,
-                            wlr="mw",
+                            method="mw",
                             s_star = 0.5,
                             t_star= 4),
                "must specify either t_star or s_star")
@@ -119,14 +119,14 @@ test_that("s_star not a probability", {
 test_that("s_star and t_star not a specified", {
   expect_error(find_weights(formula=Surv(event_time,event_status)~group,
                             data=sim_data,
-                            wlr="mw"),
+                            method="mw"),
                "must specify either t_star or s_star")
 })
 
 test_that("s_star not a probability", {
   expect_error(find_weights(formula=Surv(event_time,event_status)~group,
                             data=sim_data,
-                            wlr="mw",
+                            method="mw",
                             s_star = -0.5),
                "s_star must a probability")
 })
@@ -136,6 +136,6 @@ sim_data_strata$ecog<-rep(c(0,1),1000)
 test_that("don't allow strata",
   {expect_error(find_weights(formula=Surv(event_time,event_status)~group+strata(ecog),
                             data=sim_data_strata,
-                            wlr="mw",
+                            method="mw",
                             s_star = 0.5), "does not account for strata")}
 )
