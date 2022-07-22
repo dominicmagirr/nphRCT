@@ -7,7 +7,7 @@
 find_weights(
   formula,
   data,
-  wlr,
+  method,
   t_star = NULL,
   s_star = NULL,
   rho = NULL,
@@ -21,7 +21,9 @@ The terms (on the right of the \code{~} operator) must include the treatment arm
 
 \item{data}{Data frame containing time-to-event data.}
 
-\item{wlr}{Character string specifying type of weighted log-rank test. Either \code{"lr"} for a standard log-rank test, \code{"mw"} for a modestly-weighted log-rank test, or \code{"fh"} for the Fleming-Harrington rho-gamma family.}
+\item{method}{Character string specifying type of weighted log-rank test.
+Either \code{"lr"} for a standard log-rank test, \code{"mw"} for a modestly-weighted log-rank test,
+or \code{"fh"} for the Fleming-Harrington rho-gamma family.}
 
 \item{t_star}{Parameter \eqn{t*} in the modestly weighted (\code{"mw"}) test, see Details.}
 
@@ -43,7 +45,7 @@ This function can perform two types of weighted log-rank test,
 the modestly-weighted log-rank test and the Fleming-Harrington (\eqn{\rho},\eqn{\gamma}) test, in addition to the standard log-rank test.
 }
 \details{
-Select which of the three tests to perform using argument \code{wlr}.
+Select which of the three tests to perform using argument \code{method}.
 The output is calculated as outlined in \code{vignette("weighted_log_rank_tests", package="wlrt")}.
 
 For the weighted log rank tests, the weights are
@@ -68,7 +70,7 @@ sim_data <- sim_events_delay(
 #example setting t_star
 find_weights(formula=Surv(event_time,event_status)~group,
   data=sim_data,
-  wlr="mw",
+  method="mw",
   t_star = 4
 )
 }

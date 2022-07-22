@@ -15,19 +15,19 @@ sim_events_delay(
 )
 }
 \arguments{
-\item{{delay_e}}{Length of first period of the experimental arm.}
+\item{delay_e}{Length of first period of the experimental arm.}
 
-\item{{lambda_c}}{Rate of exponential distribution  of the control arm.}
+\item{lambda_c}{Rate of exponential distribution  of the control arm.}
 
-\item{{lambda_e_1}}{Rate of exponential distribution during first period of the experimental arm.}
+\item{lambda_e_1}{Rate of exponential distribution during first period of the experimental arm.}
 
-\item{{lambda_e_2}}{Rate of exponential distribution during second period of the experimental arm.}
+\item{lambda_e_2}{Rate of exponential distribution during second period of the experimental arm.}
 
-\item{{rec_times_c}}{Recruitment times on the control arm with each value corresponding to one individual}
+\item{rec_times_c}{Recruitment times on the control arm with each value corresponding to one individual}
 
-\item{{rec_times_e}}{Recruitment times on the experimental arm with each value corresponding to one individual}
+\item{rec_times_e}{Recruitment times on the experimental arm with each value corresponding to one individual}
 
-\item{{max_cal_t}}{Calendar time at which the trial ends, all observations are censored at this time.}
+\item{max_cal_t}{Calendar time at which the trial ends, all observations are censored at this time.}
 }
 \value{
 Data frame with columns \code{event_time}, \code{event_status} (\code{1} = event, \code{0} = censored), and treatment arm indicator \code{group}.

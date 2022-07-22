@@ -15,7 +15,14 @@ The terms (on the right of the \code{~} operator) must include the treatment arm
 \item{include_cens}{Boolean indicating whether to include values corresponding to censoring times}
 }
 \value{
-Data frame containing columns (in order):
+Data frame
+}
+\description{
+This function calculates the number of individuals at risk and number of events at each distinct event time
+(and censoring time if \code{include_cens==TRUE}).
+}
+\details{
+Returns a data frame with the following columns:
 \itemize{
 \item time \code{t_j}
 \item number of events in each of the treatments at \code{t_j}
@@ -23,13 +30,6 @@ Data frame containing columns (in order):
 \item number of individuals at risk in each of the treatment groups just before time \code{t_j}
 \item combined number of individuals at risk in both treatment groups just before time \code{t_j}
 }
-}
-\description{
-This function calculates the number of individuals at risk and number of events at each distinct event time
-(and censoring time if \code{include_cens==TRUE}).
-}
-\details{
-
 }
 \examples{
 library(wlrt)

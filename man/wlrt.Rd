@@ -7,7 +7,7 @@
 wlrt(
   formula,
   data,
-  wlr,
+  method,
   t_star = NULL,
   s_star = NULL,
   rho = NULL,
@@ -20,7 +20,9 @@ The terms (on the right of the \code{~} operator) must include the treatment arm
 
 \item{data}{Data frame containing time-to-event data.}
 
-\item{wlr}{Character string specifying type of weighted log-rank test. Either \code{"lr"} for a standard log-rank test, \code{"mw"} for a modestly-weighted log-rank test, or \code{"fh"} for the Fleming-Harrington rho-gamma family.}
+\item{method}{Character string specifying type of weighted log-rank test.
+Either \code{"lr"} for a standard log-rank test, \code{"mw"} for a modestly-weighted log-rank test,
+or \code{"fh"} for the Fleming-Harrington rho-gamma family.}
 
 \item{t_star}{Parameter \eqn{t*} in the modestly weighted (\code{"mw"}) test, see Details.}
 
@@ -42,61 +44,59 @@ This function can perform two types of weighted log-rank test,
 the modestly-weighted log-rank test and the Fleming-Harrington (\eqn{\rho},\eqn{\gamma}) test, in addition to the standard log-rank test.
 }
 \details{
-Select which of the three tests to perform using argument \code{wlr}.
+Select which of the three tests to perform using argument \code{method}.
 The output is calculated as outlined in \code{vignette("weighted_log_rank_tests", package="wlrt")}.
 }
 \examples{
 library(wlrt)
 set.seed(1)
+rec_c <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
+rec_e <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
 sim_data <- sim_events_delay(
-  n_c = 50,
-  n_e = 50,
   delay_e = 6,
   lambda_c = log(2)/9,
   lambda_e_1 = log(2)/9,
   lambda_e_2 = log(2)/18,
-  rec_period = 12,
-  rec_power = 1,
+  rec_times_c = rec_c,
+  rec_times_e = rec_e,
   max_cal_t = 36
 )
 #example setting t_star
 wlrt(formula=Surv(event_time,event_status)~group,
   data=sim_data,
-  wlr="mw",
+  method="mw",
   t_star = 4
 )
 #example setting s_star
 wlrt(formula=Surv(event_time,event_status)~group,
   data=sim_data,
-  wlr="mw",
+  method="mw",
   s_star = 0.5
 )
 #example with 1 strata
 sim_data_0 <- sim_data
 sim_data_0$ecog=0
 sim_data_1 <- sim_events_delay(
-  n_c = 50,
-  n_e = 50,
   delay_e = 6,
   lambda_c = log(2)/6,
   lambda_e_1 = log(2)/6,
   lambda_e_2 = log(2)/12,
-  rec_period = 12,
-  rec_power = 1,
+  rec_times_c = rec_c,
+  rec_times_e = rec_e,
   max_cal_t = 36
 )
 sim_data_1$ecog=1
 sim_data_strata<-rbind(sim_data_0,sim_data_1)
 wlrt(formula=Surv(event_time,event_status)~group+strata(ecog),
   data=sim_data_strata,
-  wlr="mw",
+  method="mw",
   t_star = 4
 )
 #example with 2 strata
 sim_data_strata_2<-cbind(sim_data_strata,sex=rep(c("M","F"),times=100))
 wlrt(formula=Surv(event_time,event_status)~group+strata(ecog)+strata(sex),
   data=sim_data_strata_2,
-  wlr="mw",
+  method="mw",
   t_star = 4
 )
 }

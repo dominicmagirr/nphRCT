@@ -14,24 +14,24 @@ sim_rec_times(
 )
 }
 \arguments{
-\item{{rec_model}}{Character string specifying the type of recruitment model. Either the power model \code{"power"}
-or piecewise exponential \code{"exp"}.}
+\item{rec_model}{Character string specifying the type of recruitment model. Either the power model \code{"power"}
+or piecewise constant \code{"pw_constant"}.}
 
-\item{{n}}{Number of recruitment times to simulate}
+\item{n}{Number of recruitment times to simulate}
 
-\item{{rec_power}}{Parameter used to model recruitment according to power model, see Details.}
+\item{rec_power}{Parameter used to model recruitment according to power model, see Details.}
 
-\item{{rec_period}}{Parameter used to model recruitment according to power model, see Details.}
+\item{rec_period}{Parameter used to model recruitment according to power model, see Details.}
 
-\item{{rec_rate}}{Parameter used to model recruitment according to piecewise exponential model, see Details.}
+\item{rec_rate}{Parameter used to model recruitment according to piecewise constant model, see Details.}
 
-\item{{rec_duration}}{Parameter used to model recruitment according to piecewise exponential model, see Details.}
+\item{rec_duration}{Parameter used to model recruitment according to piecewise constant model, see Details.}
 }
 \value{
-
+Vector of recruitment times
 }
 \description{
-Simulate recruitment times from either a power model or a piecewise exponential model
+Simulate recruitment times from either a power model or a piecewise constant model
 }
 \details{
 Recruitment is modeled using either the power model or the piecewise constant model.
@@ -42,18 +42,18 @@ The power model is defined as:
 
 Alternatively, recruitment can be modelled using the piecewise constant model.
 In the simple case with only one time period defined in \code{rec_duration}, the times between each of the individuals entering follow-up
-are \code{n} samples from the exponential distribution with rate parameter \eqn{\lambda},
+are samples from the exponential distribution with rate parameter \eqn{\lambda},
 \eqn{f(t)=\lambda exp(-\lambda t)}. The function returns \code{n} recruitment times, regardless of the
 length of duration \code{rec_duration.}
 
 In the case with multiple time periods defined in \code{rec_duration}, the number of events in each period is sampled from the
-Poisson distribution \eqn{P(K=k)=\lambda^k \exp{-\lambda}/k!}, where \eqn{k} is the number of events and the rate parameter
-\eqn{\lambda} is equal to \code{rec_rate} multiplied by the duration of the period in \code{rec_duration}. The recruitment times
-are then sampled uniformly from the period.
+Poisson distribution \eqn{P(K=k)=\lambda^k \exp{-\lambda}/k!}, where \eqn{k} is the number of events. The rate parameter
+\eqn{\lambda} is equal to \code{rec_rate} multiplied by the duration of the time period in \code{rec_duration}. The \eqn{K} recruitment times
+are then sampled uniformly from the corresponding time period.
 
-In the case with multiple time period, fixing the number of events \code{n} is optional. In the case that \code{n} is fixed, and
-insufficient recruitment times have been simulated by the end of the last duration, the additional recruitment times will be
-simulated after the end of the last period using the method described for only one time period.
+In the case with multiple time periods, fixing the number of events \code{n} is optional. In the case that \code{n} is fixed, and
+insufficient recruitment times have been simulated by the end of the last time period, the additional recruitment times will be
+simulated after the end of the last time period using the method described above for when there is one time period.
 }
 \examples{
 library(wlrt)
@@ -63,13 +63,15 @@ sim_rec_times(n=10,
   rec_model= "power",
   rec_period=20,
   rec_power=1)
-#piecewise exponential model, where duration is set
-sim_rec_times(rec_model="exp",
+
+#piecewise constant model, where duration is set
+sim_rec_times(rec_model="pw_constant",
           rec_rate=c(1,2),
           rec_duration=c(12,8))
-#piecewise exponential model, where number of events is set
-sim_rec_times(rec_model="exp",
+#piecewise constant model, where number of events is set
+sim_rec_times(rec_model="pw_constant",
           rec_rate=c(1,2),
           rec_duration=c(12,8),
           n=10)
+   
 }

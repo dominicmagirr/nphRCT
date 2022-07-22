@@ -7,11 +7,12 @@
 find_scores(
   formula,
   data,
-  wlr,
+  method,
   t_star = NULL,
   s_star = NULL,
   rho = NULL,
-  gamma = NULL
+  gamma = NULL,
+  tau = NULL
 )
 }
 \arguments{
@@ -20,7 +21,9 @@ The terms (on the right of the \code{~} operator) must include the treatment arm
 
 \item{data}{Data frame containing time-to-event data.}
 
-\item{wlr}{Character string specifying type of weighted log-rank test. Either \code{"lr"} for a standard log-rank test, \code{"mw"} for a modestly-weighted log-rank test, or \code{"fh"} for the Fleming-Harrington rho-gamma family.}
+\item{method}{Character string specifying type of method to calculate scores. Either one of the weighted log-rank tests
+(log-rank \code{"lr"}, Fleming-Harrington \code{"fh"}, modestly weighted \code{"mw"}) or pseudovalue-based scores (restricted mean survival time \code{"rmst"},
+milestone analysis \code{"ms"})}
 
 \item{t_star}{Parameter \eqn{t*} in the modestly weighted (\code{"mw"}) test, see Details.}
 
@@ -29,6 +32,8 @@ The terms (on the right of the \code{~} operator) must include the treatment arm
 \item{rho}{Parameter \eqn{\rho} in the Fleming-Harrington (\code{"fh"}) test, see Details.}
 
 \item{gamma}{Parameter \eqn{\gamma} in the Fleming-Harrington (\code{"fh"}) test, see Details.}
+
+\item{tau}{Parameter \eqn{\tau} in the RMST (\code{"rmst"}) or milestone analysis  (\code{"ms"}) test.}
 }
 \value{
 Data frame. Each row corresponds to an event time (including censoring times if \code{include_cens=TRUE}).
@@ -53,8 +58,8 @@ the modestly-weighted log-rank test and the Fleming-Harrington (\eqn{\rho},\eqn{
 test, in addition to the standard log-rank test.
 }
 \details{
-Select which of the three tests to perform using argument \code{wlr}.
-The output is calculated as outlined in \code{vignette("weighted_log_rank_tests", package="wlrt")}.
+Select which of the tests to perform using argument \code{method}.
+For the weighted log-rank tests, the output is calculated as outlined in \code{vignette("weighted_log_rank_tests", package="wlrt")}.
 }
 \examples{
 library(wlrt)
@@ -72,7 +77,7 @@ sim_data <- sim_events_delay(
 )
 df_scores<-find_scores(formula=Surv(event_time,event_status)~group,
   data=sim_data,
-  wlr="mw",
+  method="mw",
   t_star = 4
 )
 plot(df_scores)
