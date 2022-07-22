@@ -8,11 +8,14 @@
 #'
 #' @template formula
 #' @template data
-#' @template wlr
+#' @param method Character string specifying type of method to calculate scores. Either one of the weighted log-rank tests
+#' (log-rank `"lr"`, Fleming-Harrington `"fh"`, modestly weighted `"mw"`) or pseudovalue-based scores (restricted mean survival time `"rmst"`,
+#' milestone analysis `"ms"`)
 #' @template t_star
 #' @template s_star
 #' @template rho
 #' @template gamma
+#' @param tau Parameter \eqn{\tau} in the RMST (`"rmst"`) or milestone analysis  (`"ms"`) test.
 #' @return 
 #' Data frame. Each row corresponds to an event time (including censoring times if `include_cens=TRUE`).
 #' At each time specified in `t_j` the columns indicate
@@ -28,8 +31,9 @@
 #' 
 #' @details
 #'
-#' Select which of the three tests to perform using argument `wlr`.
-#' The output is calculated as outlined in `vignette("weighted_log_rank_tests", package="wlrt")`.
+#' Select which of the tests to perform using argument `method`.
+#' For the weighted log-rank tests, the output is calculated as outlined in `vignette("weighted_log_rank_tests", package="wlrt")`.
+#' 
 #'
 #' @examples
 #' library(wlrt)
@@ -47,7 +51,7 @@
 #' )
 #' df_scores<-find_scores(formula=Surv(event_time,event_status)~group,
 #'   data=sim_data,
-#'   wlr="mw",
+#'   method="mw",
 #'   t_star = 4
 #' )
 #' plot(df_scores)
@@ -64,42 +68,65 @@
 
 find_scores<-function(formula,
                        data,
-                       wlr,
+                       method,
                        t_star = NULL,
                        s_star = NULL,
                        rho = NULL,
-                       gamma = NULL){
+                       gamma = NULL,
+                       tau=NULL){
+  method<-match.arg(method,c("mw","lr","fh","rmst","ms"))
   
-  w<-find_weights(formula=formula,
-                 data=data,
-                 wlr=wlr,
-                 t_star = t_star,
-                 s_star = s_star,
-                 rho = rho,
-                 gamma = gamma,
-                 include_cens=TRUE)
+  #weighted log rank tests
+  if(method %in% c("mw","lr","fh")){
+    w<-find_weights(formula=formula,
+                   data=data,
+                   method=method,
+                   t_star = t_star,
+                   s_star = s_star,
+                   rho = rho,
+                   gamma = gamma,
+                   include_cens=TRUE)
+    
+    df <- find_at_risk(formula=formula,
+                               data=data,
+                               include_cens=TRUE)
+    df$score_censored<-with(df,-cumsum(w*(n_event/n_risk)))
+    df$score_event<-with(df,score_censored+w)
+    
+    formula_vars <- all.vars(formula)
+    time_col <- formula_vars[1]
+    status_col <- formula_vars[2]
+    group_col<-formula_vars[-(1:2)]
+    
+    data[["t_j"]]<-data[[time_col]]
+    data[["event"]]<-data[[status_col]]
+    data[["group"]]<-data[[group_col]]
+    
+    df<-merge(x = df[,c("t_j","score_event","score_censored")], y = data[,c("t_j","event","group")], by = "t_j", all.x = TRUE)
+
+    df$score <- with(df, event * score_event + (1-event) * score_censored)
+    df$score_censored<-NULL
+    df$score_event<-NULL
+  }
   
-  df <- find_at_risk(formula=formula,
-                             data=data,
-                             include_cens=TRUE)
-  df$score_censored<-with(df,-cumsum(w*(n_event/n_risk)))
-  df$score_event<-with(df,score_censored+w)
-  #####################################
-  ## include treatment group (DM)
+  #Restricted mean survival time
+  if(method=="rmst"){
+    df <-find_pseudovalues(formula=formula,
+                      data=data,
+                      method = "rmst",
+                      tau = tau)
+  }
+  
+  #Milestone
+  if(method=="ms"){
+    df <-find_pseudovalues(formula=formula,
+                                data=data,
+                                method = "ms",
+                                tau = tau)
+  }
 
-  formula_vars <- all.vars(formula)
-  time_col <- formula_vars[1]
-  status_col <- formula_vars[2]
-  group_col<-formula_vars[-(1:2)]
-
-  data$t_j<-data[[time_col]]
-  data$event<-data[[status_col]]
-  data$group<-data[[group_col]]
-
-  df<-merge(x = df[,c("t_j","score_censored","score_event")], y = data[,c("t_j","event","group")], by = "t_j", all.x = TRUE)
   ###########################################
   ## pick out score (event or censored) (DM)
-  df$score <- with(df, event * score_event + (1 - event) * score_censored)
   ## standardize scores to (-1, 1) (DM)
   max_a <- max(df$score)
   min_a <- min(df$score)
@@ -108,55 +135,29 @@ find_scores<-function(formula,
   df$standardized_score <- df$score * A + B
   ############################################
   
-  df$rank<-factor(df$t_j)
-  levels(df$rank)<-paste0("(",1:length(unique(df$t_j)),")")
+  # df$rank<-factor(df$t_j)
+  # levels(df$rank)<-paste0("(",1:length(unique(df$t_j)),")")
   out<-list(df=df)
-  class(out)<-"wlrt_score"
+  class(out)<-"df_score"
   out
 }
-
-
-
+args<-c()
 #' @export
-plot.wlrt_score<-function(x,...){
-  df<-x$df
-  
-  ## suggested changes (DM)
-  #df$x_pos<-1:length(unique(df$rank))
-  df$x_pos<-1:length(df$rank)
-  
-  # df_experimental_cens<-df[df$group == "experimental" & df$event == 0,]
-  # df_experimental_event<-df[df$group == "experimental" & df$event == 1,]
-  # df_control_cens<-df[df$group == "control" & df$event == 0,]
-  # df_control_event<-df[df$group == "control" & df$event == 1,]
-  
-  group_labels <- unique(df$group)
-  gl1 <- group_labels[1]
-  gl2 <- group_labels[2]
-  
-  df_gl1_cens<-df[df$group == gl1 & df$event == 0,]
-  df_gl1_event<-df[df$group == gl1 & df$event == 1,]
-  df_gl2_cens<-df[df$group == gl2 & df$event == 0,]
-  df_gl2_event<-df[df$group == gl2 & df$event == 1,]
-  
-  args <- list(ylim=c(-1,1))
-  
+plot.df_score<-function(x,...){
+  df<-x[["df"]]
+  df[["group"]]<-as.factor(df[["group"]])
+  gl1=levels(df[["group"]])[1]
+  gl2=levels(df[["group"]])[2]
+  df$event<-as.factor(df[["event"]])
+
+  args <- list(col="Arm",x="Time",y="Score")
   inargs <- list(...)
   args[names(inargs)] <- inargs
+  labels<-do.call(ggplot2::labs,args)
   
-  do.call(plot,c(list(x=df$x_pos,
-                      type="n",xlab="Rank",xaxt="n",ylab="Score"),args))
-  
-  axis(side=1, labels=df$rank, at=df$x_pos)
-  
-  mycol_blue <- rgb(0, 0, 255, max = 255, alpha = 100)
-  mycol_red <- rgb(255, 0, 0, max = 255, alpha = 100)
-  #points(x=df_control_event$x_pos,y=df_control_event$standardized_score,pch=15,col=mycol_red,cex=1)
-  #points(x=df_control_cens$x_pos,y=df_control_cens$standardized_score,pch=0,col=mycol_red,cex=1)
-  #points(x=df_experimental_event$x_pos,y=df_experimental_event$standardized_score,pch=16,col=mycol_blue,cex=1)
-  #points(x=df_experimental_cens$x_pos,y=df_experimental_cens$standardized_score,pch=1,col=mycol_blue,cex=1)
-  points(x=df_gl1_event$x_pos,y=df_gl1_event$standardized_score,pch=15,col=mycol_red,cex=1)
-  points(x=df_gl1_cens$x_pos,y=df_gl1_cens$standardized_score,pch=0,col=mycol_red,cex=1)
-  points(x=df_gl2_event$x_pos,y=df_gl2_event$standardized_score,pch=16,col=mycol_blue,cex=1)
-  points(x=df_gl2_cens$x_pos,y=df_gl2_cens$standardized_score,pch=1,col=mycol_blue,cex=1)
-}
+  means<-data.frame(intercept=c(mean(df[df[["group"]]==gl1,"standardized_score"]),mean(df[df[["group"]]==gl2,"standardized_score"])),
+                         group=c(gl1,gl2))
+  ggplot2::ggplot(df, ggplot2::aes_string(x="t_j", y="standardized_score",col="group")) + ggplot2::geom_point(alpha=0.3) +
+    ggplot2::ylim(-1.1,1.1)+labels+ 
+    ggplot2::geom_hline(ggplot2::aes_string(yintercept="intercept",col="group"),linetype="dashed",data=means)
+  }
