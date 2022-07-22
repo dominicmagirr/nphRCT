@@ -12,7 +12,7 @@ sim_data <- sim_events_delay(
 )
 df_scores<-find_scores(formula=Surv(event_time,event_status)~group,
   data=sim_data,
-  wlr="mw",
+  method="mw",
   t_star = 4
 )
 
@@ -33,13 +33,5 @@ save_png <- function(code) {
 
 test_that("plot", {
   expect_snapshot_file(save_png(	
-    plot.wlrt_score(df_scores)), "plot_wlrt_score.png",cran = TRUE)
+    plot(df_scores)), "plot_wlrt_score.png",cran = TRUE)
 })
-
-save_table <- function(code) {
-  path <- tempfile(fileext = ".png")
-  png(file = path)
-  on.exit(dev.off())
-  code
-  path
-}
