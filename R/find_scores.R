@@ -148,16 +148,18 @@ plot.df_score<-function(x,...){
   df[["group"]]<-as.factor(df[["group"]])
   gl1=levels(df[["group"]])[1]
   gl2=levels(df[["group"]])[2]
-  df$event<-as.factor(df[["event"]])
-
-  args <- list(col="Arm",x="Time",y="Score")
+  df[["event"]]<-factor(df[["event"]],levels=c(1,0))
+  levels(df[["event"]])<-c( "event","cenored")
+  df[["group"]]<-factor(df[["group"]],levels=c(gl1,gl2))
+  df[["event_group"]]<-paste(df[["event"]],df[["group"]],sep=", ")
+  args <- list(col="",x="Time",y="Score")
   inargs <- list(...)
   args[names(inargs)] <- inargs
   labels<-do.call(ggplot2::labs,args)
   
   means<-data.frame(intercept=c(mean(df[df[["group"]]==gl1,"standardized_score"]),mean(df[df[["group"]]==gl2,"standardized_score"])),
                          group=c(gl1,gl2))
-  ggplot2::ggplot(df, ggplot2::aes_string(x="t_j", y="standardized_score",col="group")) + ggplot2::geom_point(alpha=0.3) +
+  ggplot2::ggplot(df, ggplot2::aes_string(x="t_j", y="standardized_score",col="event_group")) + ggplot2::geom_point(alpha=0.3) +
     ggplot2::ylim(-1.1,1.1)+labels+ 
-    ggplot2::geom_hline(ggplot2::aes_string(yintercept="intercept",col="group"),linetype="dashed",data=means)
+    ggplot2::geom_hline(ggplot2::aes_string(yintercept="intercept",col="event_group"),linetype="dashed",data=means)
   }
