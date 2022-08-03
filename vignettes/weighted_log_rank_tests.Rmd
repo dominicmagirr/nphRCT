@@ -42,15 +42,18 @@ Here we create a simulated dataset with 5 individuals on each arm. Assume that o
 ```{r 1}
 library(wlrt)
 set.seed(1)
-rec_c <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
-rec_e <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
 sim_data <- sim_events_delay(
-  delay_e = 6,
-  lambda_c = log(2)/9,
-  lambda_e_1 = log(2)/9,
-  lambda_e_2 = log(2)/18,
-  rec_times_c = rec_c,
-  rec_times_e = rec_e,
+  event_model=list(
+    duration_c = 36,
+    duration_e = c(12 ,24),
+    lambda_c = log(2)/9,
+    lambda_e = c(log(2)/9,log(2)/18)),
+  recruitment_model=list(
+    rec_model="power",
+    rec_period=12,
+    rec_power=1),
+  n_c=5,
+  n_e=5,
   max_cal_t = 36
 )
 sim_data
@@ -186,6 +189,8 @@ df_scores_fh<-find_scores(formula=Surv(event_time,event_status)~group,
 plot(df_scores_fh)
 ```
 
+
+
 ### Stratification
 
 The issue of stratification when performing weighted log-rank tests is discussed in Magirr and Jiménez (2022). They explore various approaches to combining the results of stratified analyses. In particular they recommend combining on the Z-statistic scale, i.e. for the case of two strata, first express the stratified log-rank test as a linear combination of standardized Z-statistics, $\sqrt{V_1}Z_1+\sqrt{V_2}Z_2 \sim N(0,V_1+V_2)$. $V_1$ and $V_2$ are the variances for the log-rank test statistic on the first and second stratum respectively, and $Z_1$ and $Z_2$ are the Z-statistics for the log-rank test statistic on the first and second stratum respectively. Secondly, the Z-statistics $Z_1$ and $Z_2$ are replaced by the Z-statistics from the weighted log-rank test.
@@ -199,15 +204,18 @@ Here we introduce a strata `ecog` that has different $\lambda$ parameters, and d
 ```{r 8}
 sim_data_0 <- sim_data
 sim_data_0$ecog=0
-rec_c <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
-rec_e <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
 sim_data_1 <- sim_events_delay(
-  delay_e = 6,
-  lambda_c = log(2)/6,
-  lambda_e_1 = log(2)/6,
-  lambda_e_2 = log(2)/12,
-  rec_times_c = rec_c,
-  rec_times_e = rec_e,
+  event_model=list(
+    duration_c = 36,
+    duration_e = c(6,30),
+    lambda_c = log(2)/6,
+    lambda_e = c(log(2)/6,log(2)/12)),
+  recruitment_model=list(
+    rec_model="power",
+    rec_period=12,
+    rec_power=1),
+  n_c=5,
+  n_e=5,
   max_cal_t = 36
 )
 sim_data_1$ecog=1
