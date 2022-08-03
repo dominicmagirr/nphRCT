@@ -1,12 +1,17 @@
-rec_c <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=1000)
-rec_e <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=1000)
 sim_data <- sim_events_delay(
-  delay_e = 6,
-  lambda_c = log(2)/9,
-  lambda_e_1 = log(2)/9,
-  lambda_e_2 = log(2)/18,
-  rec_times_c = rec_c,
-  rec_times_e = rec_e,
+  event_model=list(
+    duration_c = 36,
+    duration_e = c(6,30),
+    lambda_c = log(2)/9,
+    lambda_e = c(log(2)/9,log(2)/18)
+  ),
+  recruitment_model=list(
+    rec_model="power",
+    rec_period = 12,
+    rec_power = 1
+  ),
+  n_c=1000,
+  n_e=1000,
   max_cal_t = 36
 )
 weights_mw<-find_weights(formula=Surv(event_time,event_status)~group,
