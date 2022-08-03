@@ -2,30 +2,32 @@
 % Please edit documentation in R/sim_events_delay.R
 \name{sim_events_delay}
 \alias{sim_events_delay}
-\title{Simulate survival data from a two-arm trial with a delayed separation of survival curves}
+\title{Simulate survival data from a two-arm trial}
 \usage{
-sim_events_delay(
-  delay_e,
-  lambda_c,
-  lambda_e_1,
-  lambda_e_2,
-  rec_times_c,
-  rec_times_e,
-  max_cal_t
-)
+sim_events_delay(event_model, recruitment_model, n_c, n_e, max_cal_t = 36)
 }
 \arguments{
-\item{delay_e}{Length of first period of the experimental arm.}
+\item{event_model}{List containing information to simulate event times, including:
+\itemize{
+\item \code{duration_c} the vector of durations corresponding to each of the periods of the control arm.
+\item \code{duration_e} is the vector of durations corresponding to each of the periods of the experimental arm.
+\item \code{lambda_c} is the vector of parameters \eqn{\lambda} corresponding to each of the periods of the control arm.
+\item \code{lambda_e} is the vector of parameters \eqn{\lambda} corresponding to each of the periods of the experimental arm.
+}}
 
-\item{lambda_c}{Rate of exponential distribution  of the control arm.}
+\item{recruitment_model}{List containing information to simulate recruitment times, including:
+\itemize{
+\item \code{rec_model} Character string specifying the type of recruitment model. Either the power model \code{"power"}
+or piecewise constant \code{"pw_constant"}.
+\item \code{rec_power} Parameter used to model recruitment according to power model.
+\item \code{rec_period} Parameter used to model recruitment according to power model.
+\item \code{rec_rate} Parameter used to model recruitment according to piecewise constant model.
+\item \code{rec_duration} Parameter used to model recruitment according to piecewise constant model.
+}}
 
-\item{lambda_e_1}{Rate of exponential distribution during first period of the experimental arm.}
+\item{n_c}{Number of individuals on the control arm}
 
-\item{lambda_e_2}{Rate of exponential distribution during second period of the experimental arm.}
-
-\item{rec_times_c}{Recruitment times on the control arm with each value corresponding to one individual}
-
-\item{rec_times_e}{Recruitment times on the experimental arm with each value corresponding to one individual}
+\item{n_e}{Number of individuals on the event arm}
 
 \item{max_cal_t}{Calendar time at which the trial ends, all observations are censored at this time.}
 }
@@ -33,29 +35,55 @@ sim_events_delay(
 Data frame with columns \code{event_time}, \code{event_status} (\code{1} = event, \code{0} = censored), and treatment arm indicator \code{group}.
 }
 \description{
-Simulate survival data from a two-arm trial with a delayed separation of survival curves.
-Survival times on the control arm are simulated from an exponential distribution.
-Survival times on the experimental arm are simulated from a two-piece exponential distribution.
+Simulate survival data from a two-arm trial with
+survival times on the control arm and experimental arm simulated from an exponential distribution
+or piecewise exponential distribution.
 }
 \details{
 Survival times are simulated from an exponential distribution with rate parameter \eqn{\lambda},
 \eqn{f(t)=\lambda exp(-\lambda t)}. This distribution has a median value of \eqn{log(2)/\lambda};
-this can be a useful fact when setting the rates \code{lambda_c}, \code{lambda_e_1}, \code{lambda_e_2}.
+this can be a useful fact when setting the rates \code{lambda_c} and \code{lambda_e}.
+The survival times can be simulated from a piecewise exponential distribution, setting one/multiple
+durations and \eqn{\lambda} parameters for the control and experimental arms.
+
+Recruitment is modeled using either the power model or the piecewise constant model.
+
+The power model is defined as:
+\eqn{P(recruited before T) = (T / rec_period) ^ rec_power}, where
+\eqn{rec_period} is the time at the end of recruitment period, and \eqn{rec_power} controls the rate of recruitment.
+
+Alternatively, recruitment can be modelled using the piecewise constant model.
+In the simple case with only one time period defined in \code{rec_duration}, the times between each of the individuals entering follow-up
+are samples from the exponential distribution with rate parameter \eqn{\lambda},
+\eqn{f(t)=\lambda exp(-\lambda t)}. The function returns \code{n} recruitment times, regardless of the
+length of duration \code{rec_duration.}
+
+In the case with multiple time periods defined in \code{rec_duration}, the number of events in each period is sampled from the
+Poisson distribution \eqn{P(K=k)=\lambda^k \exp{-\lambda}/k!}, where \eqn{k} is the number of events. The rate parameter
+\eqn{\lambda} is equal to \code{rec_rate} multiplied by the duration of the time period in \code{rec_duration}. The \eqn{K} recruitment times
+are then sampled uniformly from the corresponding time period. In the case that
+insufficient recruitment times have been simulated by the end of the last time period, the additional recruitment times will be
+simulated after the end of the last time period using the method described for when there is one time period.
 
 All observations are censored at the calendar time defined in argument \code{max_cal_t}.
 }
 \examples{
 library(wlrt)
 set.seed(1)
-rec_c <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
-rec_e <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
 sim_data <- sim_events_delay(
-  delay_e = 6,
-  lambda_c = log(2)/9,
-  lambda_e_1 = log(2)/9,
-  lambda_e_2 = log(2)/18,
-  rec_times_c = rec_c,
-  rec_times_e = rec_e,
+  event_model=list(
+    duration_c = 36,
+    duration_e = c(6,30),
+    lambda_c = log(2)/9,
+    lambda_e = c(log(2)/9,log(2)/18)
+  ),
+  recruitment_model=list(
+    rec_model="power",
+    rec_period = 12,
+    rec_power = 1
+  ),
+  n_c=50,
+  n_e=50,
   max_cal_t = 36
 )
 }
