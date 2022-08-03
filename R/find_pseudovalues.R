@@ -4,6 +4,7 @@ rmst1<-function(time, status, tau, alpha=0.05){
   #-- statuts
   #-- tau -- truncation time
   #-- alpha -- gives (1-alpha) confidence interval
+  Surv<-survival::Surv
   
   ft= survival::survfit(Surv(time, status)~1)
   idx=ft$time<=tau
@@ -77,8 +78,10 @@ find_pseudovalues <- function(formula,
   }
 
   data[[group_col]]<-as.factor(data[[group_col]])
+  Surv<-survival::Surv
   
   if(method=="rmst"){
+    
     rmst_full <- rmst1(time = data[[time_col]],
                        status = data[[status_col]],
                        tau = tau)$rmst[1]
@@ -108,8 +111,6 @@ find_pseudovalues <- function(formula,
     return(df_rmst_pseudo)
   }
   if(method=="ms"){
-    Surv<-survival::Surv
-    
     n <- length(data[[time_col]])
     
     ### non-parametric estimate of survival
