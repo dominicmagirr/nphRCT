@@ -7,7 +7,6 @@ reference:
   - title: Functions
     desc: Functions exported by MODIStsp
     contents:
-      - '`sim_rec_times`'      
       - '`sim_events_delay`'      
       - '`find_at_risk`'
       - '`find_weights`'
