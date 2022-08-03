@@ -1,27 +1,42 @@
 set.seed(1)
-rec_c <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
-rec_e <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
 sim_data <- sim_events_delay(
-  delay_e = 6,
-  lambda_c = log(2)/9,
-  lambda_e_1 = log(2)/9,
-  lambda_e_2 = log(2)/18,
-  rec_times_c = rec_c,
-  rec_times_e = rec_e,
+  event_model=list(
+    duration_c = 36,
+    duration_e = c(6,30),
+    lambda_c = log(2)/9,
+    lambda_e = c(log(2)/9,log(2)/18)
+  ),
+  recruitment_model=list(
+    rec_model="power",
+    rec_period = 12,
+    rec_power = 1
+  ),
+  n_c=50,
+  n_e=50,
   max_cal_t = 36
 )
-df_scores<-find_scores(formula=Surv(event_time,event_status)~group,
-  data=sim_data,
-  method="mw",
-  t_star = 4
+df_scores_mw<-find_scores(formula=Surv(event_time,event_status)~group,
+                          data=sim_data,
+                          method="mw",
+                          t_star = 4
 )
+df_scores_rmst<-find_scores(formula=Surv(event_time,event_status)~group,
+                            data=sim_data,
+                            method="rmst",
+                            tau = 4
+)
+df_scores_ms<-find_scores(formula=Surv(event_time,event_status)~group,
+                          data=sim_data,
+                          method="ms",
+                          tau = 4
+)
+save_file <- function(code){
+  path <- tempfile(fileext = ".RDS")
+  saveRDS(code,file = path)
+  path
+}
 
 
-df<-df_scores$df
-test_that("should add to zero by definition", {
-  expect_equal(sum(c(rowSums(df[,grep("n_event_",names(df))])*df$score_event+
-                 rowSums(df[,grep("n_censored_",names(df))])*df$score_censored)), 0)
-})
 
 save_png <- function(code) {
   path <- tempfile(fileext = ".png")
@@ -31,7 +46,17 @@ save_png <- function(code) {
   path
 }
 
-test_that("plot", {
-  expect_snapshot_file(save_png(	
-    plot(df_scores)), "plot_wlrt_score.png",cran = TRUE)
-})
+for (type in c("mw","rmst","ms")){
+  df_scores<-get(paste0("df_scores_",type))
+  df<-df_scores$df
+  
+  test_that("should add to zero by definition", {
+    expect_equal(sum(c(rowSums(df[,grep("n_event_",names(df))])*df$score_event+
+                         rowSums(df[,grep("n_censored_",names(df))])*df$score_censored)), 0)
+  })
+  
+  test_that("plot", {
+  expect_snapshot_file(save_png(
+    plot(df_scores)), paste0("plot_",type,".png"),cran = TRUE)
+  })
+}
