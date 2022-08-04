@@ -23,19 +23,19 @@ See Magirr and Burman (2019) and Magirr (2021) for details about the weighted lo
 
 This package can be used to simulate a dataset for a two-arm RCT with delayed separation of survival curves by using the `sim_events_delay` function.
 
-This function requires the user to input recruitment times of the patients through
-parameters `rec_c` and `rec_e`. These can be simulated using the function `sim_rec_times` which offers
-recruitment time simulation via either a piecewise constant model or a power model.
+There are two parts to simulating the event times and statuses: the event model (parameters defined in `event_model`) and the recruitment model (parameters defined in `recruitment_model`).
 
-The function `sim_events_delay` assumes that the survival times on the control arm follow an exponential distribution, and the survival times on the experimental arm follow a two-piece exponential distribution. Given rate parameter $\lambda$, the exponential distribution has the form:
+Firstly, looking at the event model. The function `sim_events_delay` assumes that the survival times on the control and exponential arm follow a piecewise exponential distribution. Given rate parameter $\lambda$, the exponential distribution has the form:
 
 \[
 f(t)=\lambda \exp(-\lambda t)
 \]
 
-These rate parameters are set using the argument `lambda_c` for the control arm, `lambda_e_1` for the first part of the experimental arm, and `lambda_e_2` for the second part of the experimental arm.
+The rate parameters are set using the argument `lambda_c` for the control arm and `lambda_e` for the experimental arm. To use the piecewise version, this argument is set to a vector with length corresponding to the number of pieces. The duration of each piece is set using parameter `duration_c` and `duration_e`.
 
-The `sim_events_delay` function requires that the user sets a parameter `max_cal_t`, this is the calendar time at which all observations are censored.
+Secondly, looking at the recruitment model. The recruitment can be modelled using either a power model or a piecewise constant model. See `help(sim_events_delay)` more details about this models.
+
+Additionally, the `sim_events_delay` function censors all observations at the calendar time `max_cal_t`.
 
 Here we create a simulated dataset with 5 individuals on each arm. Assume that one unit of time is equal to one month. From entering the study until 6 months both arms have the same $\lambda$ parameter, with a median event time of 9 months. From 6 months, the experimental arm has a lower hazard rate, with a median event time of 18 months. Setting `rec_period = 12` and `rec_power = 1` means that individuals are recruited at a uniform rate over 12 months.
 
