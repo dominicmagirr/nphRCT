@@ -38,15 +38,20 @@
 #' @examples
 #' library(wlrt)
 #' set.seed(1)
-#' rec_c <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
-#' rec_e <- sim_rec_times(rec_model="power",rec_period=12,rec_power=1,n=5)
 #' sim_data <- sim_events_delay(
-#'   delay_e = 6,
-#'   lambda_c = log(2)/9,
-#'   lambda_e_1 = log(2)/9,
-#'   lambda_e_2 = log(2)/18,
-#'   rec_times_c = rec_c,
-#'   rec_times_e = rec_e,
+#'   event_model=list(
+#'     duration_c = 36,
+#'     duration_e = c(6,30),
+#'     lambda_c = log(2)/9,
+#'     lambda_e = c(log(2)/9,log(2)/18)
+#'   ),
+#'   recruitment_model=list(
+#'     rec_model="power",
+#'     rec_period = 12,
+#'     rec_power = 1
+#'   ),
+#'   n_c=50,
+#'   n_e=50,
 #'   max_cal_t = 36
 #' )
 #' df_scores<-find_scores(formula=Surv(event_time,event_status)~group,
@@ -151,15 +156,12 @@ plot.df_score<-function(x,...){
   df[["event"]]<-factor(df[["event"]],levels=c(1,0))
   levels(df[["event"]])<-c( "event","cenored")
   df[["group"]]<-factor(df[["group"]],levels=c(gl1,gl2))
-  df[["event_group"]]<-paste(df[["event"]],df[["group"]],sep=", ")
+  df[["event_group"]]<-paste(df[["group"]],df[["event"]],sep=", ")
   args <- list(col="",x="Time",y="Score")
   inargs <- list(...)
   args[names(inargs)] <- inargs
   labels<-do.call(ggplot2::labs,args)
   
-  means<-data.frame(intercept=c(mean(df[df[["group"]]==gl1,"standardized_score"]),mean(df[df[["group"]]==gl2,"standardized_score"])),
-                         group=c(gl1,gl2))
   ggplot2::ggplot(df, ggplot2::aes_string(x="t_j", y="standardized_score",col="event_group")) + ggplot2::geom_point(alpha=0.3) +
-    ggplot2::ylim(-1.1,1.1)+labels+ 
-    ggplot2::geom_hline(ggplot2::aes_string(yintercept="intercept",col="event_group"),linetype="dashed",data=means)
+    ggplot2::ylim(-1.1,1.1)+labels
   }
