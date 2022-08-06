@@ -8,7 +8,7 @@
 #' @template include_cens
 #' @return Data frame 
 #' 
-#' @details
+#' @return
 #' Returns a data frame with the following columns:
 #' - time `t_j` 
 #' - number of events in each of the treatments at `t_j`
@@ -31,8 +31,8 @@
 #'     rec_period = 12,
 #'     rec_power = 1
 #'   ),
-#'   n_c=50,
-#'   n_e=50,
+#'   n_c=5,
+#'   n_e=5,
 #'   max_cal_t = 36
 #' )
 #' #with censoring times included
