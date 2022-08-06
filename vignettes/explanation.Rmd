@@ -41,7 +41,7 @@ Let's take the example of the log-rank statistic applied to the data from the PO
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-library(wlrt)
+library(nphRCT)
 library(dplyr)
 library(survival)
 data("poplar")

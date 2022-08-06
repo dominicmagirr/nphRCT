@@ -27,7 +27,7 @@
 #'
 #' 
 #' @examples
-#' library(wlrt)
+#' library(nphRCT)
 #' set.seed(1)
 #' sim_data <- sim_events_delay(
 #'   event_model=list(

@@ -1,4 +1,4 @@
 library(testthat)
-library(wlrt)
+library(nphRCT)
 
-test_check("wlrt")
+test_check("nphRCT")
