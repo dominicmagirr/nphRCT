@@ -1,7 +1,8 @@
 #' Calculate scores
 #'
-#' Weighted log-rank tests can also be formulated as a permutation test, see Magirr (2021). 
-#' This function calculates the scores for the permutation test formulation
+#' Weighted log-rank tests can also be thought in terms of assigning a score to the each of
+#' the events (including censoring) and comparing the average score on each arm, see Magirr (2021). 
+#' This function calculates the scores
 #' for different types of weighted log-rank test,
 #' the modestly-weighted log-rank test and the Fleming-Harrington (\eqn{\rho},\eqn{\gamma}) 
 #' test, in addition to the standard log-rank test.
@@ -17,23 +18,17 @@
 #' @template gamma
 #' @param tau Parameter \eqn{\tau} in the RMST (`"rmst"`) or milestone analysis  (`"ms"`) test.
 #' @return 
-#' Data frame. Each row corresponds to an event time (including censoring times if `include_cens=TRUE`).
+#' Data frame. Each row corresponds to an event or censoring time.
 #' At each time specified in `t_j` the columns indicate
-#' - `score_censored` the scores for each censoring at time `t_j` in the permutation test formulation
-#' - `score_event` the scores for each event at time `t_j` in the permutation test formulation
 #' - `event` the event indicator
 #' - `group` the treatment arm indicator
-#' - `score` the value of the score for this individual, equal to `score_censored` if the individual is censored 
-#' and equal to `score_event` if the individual experienced the event
+#' - `score` the assigned score at time `t_j`
 #' - `standardized_score` the value of `score` standardized to be between -1 and 1
-#' - `rank` the rank of the ordered event and censoring times, with higher numbers indicating
-#'  later times `t_j`
 #' 
 #' @details
 #'
 #' Select which of the tests to perform using argument `method`.
 #' For the weighted log-rank tests, the output is calculated as outlined in `vignette("weighted_log_rank_tests", package="wlrt")`.
-#' 
 #'
 #' @examples
 #' library(wlrt)
@@ -150,18 +145,21 @@ args<-c()
 #' @export
 plot.df_score<-function(x,...){
   df<-x[["df"]]
+  
   df[["group"]]<-as.factor(df[["group"]])
   gl1=levels(df[["group"]])[1]
   gl2=levels(df[["group"]])[2]
+  
   df[["event"]]<-factor(df[["event"]],levels=c(1,0))
-  levels(df[["event"]])<-c( "event","cenored")
-  df[["group"]]<-factor(df[["group"]],levels=c(gl1,gl2))
-  df[["event_group"]]<-paste(df[["group"]],df[["event"]],sep=", ")
+  levels(df[["event"]])<-c( "event","censored")
+  
+  df[["event_group"]]<-factor(paste(df[["group"]],df[["event"]],sep=", "),levels=c(paste(gl1,"event",sep=", "),paste(gl2,"event",sep=", "),paste(gl1,"censored",sep=", "),paste(gl2,"censored",sep=", ")))
+  
   args <- list(col="",x="Time",y="Score")
   inargs <- list(...)
   args[names(inargs)] <- inargs
   labels<-do.call(ggplot2::labs,args)
   
-  ggplot2::ggplot(df, ggplot2::aes_string(x="t_j", y="standardized_score",col="event_group")) + ggplot2::geom_point(alpha=0.3) +
-    ggplot2::ylim(-1.1,1.1)+labels
+  ggplot2::ggplot(df, ggplot2::aes_string(x="t_j", y="standardized_score",col="event_group")) + ggplot2::geom_point() +
+    ggplot2::ylim(-1.1,1.1)+labels+ ggplot2::scale_color_manual(values = c("#F8766D", "#00BFC4", "lightsalmon", "darkslategray2"))
   }
