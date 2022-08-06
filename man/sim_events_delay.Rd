@@ -4,25 +4,25 @@
 \alias{sim_events_delay}
 \title{Simulate survival data from a two-arm trial}
 \usage{
-sim_events_delay(event_model, recruitment_model, n_c, n_e, max_cal_t = 36)
+sim_events_delay(event_model, recruitment_model, n_c, n_e, max_cal_t)
 }
 \arguments{
 \item{event_model}{List containing information to simulate event times, including:
 \itemize{
-\item \code{duration_c} the vector of durations corresponding to each of the periods of the control arm.
-\item \code{duration_e} is the vector of durations corresponding to each of the periods of the experimental arm.
-\item \code{lambda_c} is the vector of parameters \eqn{\lambda} corresponding to each of the periods of the control arm.
-\item \code{lambda_e} is the vector of parameters \eqn{\lambda} corresponding to each of the periods of the experimental arm.
+\item \code{duration_c} Vector of durations corresponding to each of the periods of the control arm.
+\item \code{duration_e} Vector of durations corresponding to each of the periods of the experimental arm.
+\item \code{lambda_c} Vector of parameters \eqn{\lambda} in the exponential distribution corresponding to each of the periods of the control arm.
+\item \code{lambda_e} Vector of parameters \eqn{\lambda} in the exponential distribution corresponding to each of the periods of the experimental arm.
 }}
 
 \item{recruitment_model}{List containing information to simulate recruitment times, including:
 \itemize{
 \item \code{rec_model} Character string specifying the type of recruitment model. Either the power model \code{"power"}
-or piecewise constant \code{"pw_constant"}.
-\item \code{rec_power} Parameter used to model recruitment according to power model.
-\item \code{rec_period} Parameter used to model recruitment according to power model.
-\item \code{rec_rate} Parameter used to model recruitment according to piecewise constant model.
-\item \code{rec_duration} Parameter used to model recruitment according to piecewise constant model.
+or piecewise constant model \code{"pw_constant"}.
+\item \code{rec_power} Parameter used to model recruitment according to power model, see Details.
+\item \code{rec_period} Parameter used to model recruitment according to power model, see Details.
+\item \code{rec_rate} Parameter used to model recruitment according to piecewise constant model, see Details.
+\item \code{rec_duration} Parameter used to model recruitment according to piecewise constant model, see Details.
 }}
 
 \item{n_c}{Number of individuals on the control arm}
@@ -49,21 +49,21 @@ durations and \eqn{\lambda} parameters for the control and experimental arms.
 Recruitment is modeled using either the power model or the piecewise constant model.
 
 The power model is defined as:
-\eqn{P(recruited before T) = (T / rec_period) ^ rec_power}, where
-\eqn{rec_period} is the time at the end of recruitment period, and \eqn{rec_power} controls the rate of recruitment.
+\eqn{P(recruited\_before\_T) = (T / rec\_period) ^ {rec\_power}}, where
+\eqn{rec\_period} is the time at the end of recruitment period, and \eqn{rec\_power} controls the rate of recruitment.
 
 Alternatively, recruitment can be modelled using the piecewise constant model.
 In the simple case with only one time period defined in \code{rec_duration}, the times between each of the individuals entering follow-up
 are samples from the exponential distribution with rate parameter \eqn{\lambda},
-\eqn{f(t)=\lambda exp(-\lambda t)}. The function returns \code{n} recruitment times, regardless of the
+\eqn{f(t)=\lambda exp(-\lambda t)}. The number of recruitment times defined in \code{n_c} or \code{n_e} is returned, regardless of the
 length of duration \code{rec_duration.}
 
 In the case with multiple time periods defined in \code{rec_duration}, the number of events in each period is sampled from the
-Poisson distribution \eqn{P(K=k)=\lambda^k \exp{-\lambda}/k!}, where \eqn{k} is the number of events. The rate parameter
-\eqn{\lambda} is equal to \code{rec_rate} multiplied by the duration of the time period in \code{rec_duration}. The \eqn{K} recruitment times
+Poisson distribution \eqn{P(K=k)=\lambda^k \exp{(-\lambda}/k!)}, where \eqn{k} is the number of events. The rate parameter
+\eqn{\lambda} is equal to \code{rec_rate} multiplied by the duration of the time period in \code{rec_duration}. The recruitment times
 are then sampled uniformly from the corresponding time period. In the case that
 insufficient recruitment times have been simulated by the end of the last time period, the additional recruitment times will be
-simulated after the end of the last time period using the method described for when there is one time period.
+simulated after the end of the last time period.
 
 All observations are censored at the calendar time defined in argument \code{max_cal_t}.
 }

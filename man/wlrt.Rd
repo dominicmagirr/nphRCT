@@ -24,9 +24,9 @@ The terms (on the right of the \code{~} operator) must include the treatment arm
 Either \code{"lr"} for a standard log-rank test, \code{"mw"} for a modestly-weighted log-rank test,
 or \code{"fh"} for the Fleming-Harrington rho-gamma family.}
 
-\item{t_star}{Parameter \eqn{t*} in the modestly weighted (\code{"mw"}) test, see Details.}
+\item{t_star}{Parameter \eqn{t^*} in the modestly weighted (\code{"mw"}) test, see Details.}
 
-\item{s_star}{Parameter \eqn{s*} in the modestly weighted (\code{"mw"}) test, see Details.}
+\item{s_star}{Parameter \eqn{s^*} in the modestly weighted (\code{"mw"}) test, see Details.}
 
 \item{rho}{Parameter \eqn{\rho} in the Fleming-Harrington (\code{"fh"}) test, see Details.}
 
@@ -34,10 +34,15 @@ or \code{"fh"} for the Fleming-Harrington rho-gamma family.}
 }
 \value{
 List containing the outcome of the weighted log-rank test.
-\code{u} is the test statistic U for the weighted log-rank test
-\code{v_u} is the variance of test statistic U
-\code{z} is the Z-score
-\code{trt_group} indicates which of the treatment arms the test statistic U corresponds to
+\itemize{
+\item \code{u} is the test statistic U for the weighted log-rank test
+\item \code{v_u} is the variance of test statistic U
+\item \code{z} is the Z-score
+\item \code{trt_group} indicates which of the treatment arms the test statistic U corresponds to
+}
+
+In the presence of multiple strata, the results of the test on each individual strata is returned, in addition to the combined test that was proposed by
+Magirr and Jiménez (2022), see \code{vignette("weighted_log_rank_tests", package="wlrt")}.
 }
 \description{
 This function can perform two types of weighted log-rank test,
@@ -121,4 +126,8 @@ DOI: 10.1002/pst.2091
 Magirr, D. and Burman, C.F., 2019.
 Modestly weighted logrank tests.
 Statistics in medicine, 38(20), 3782-3790.
+
+Magirr, D. and Jiménez, J. (2022)
+Stratified modestly-weighted log-rank tests in settings with an anticipated delayed separation of survival curves
+PREPRINT at https://arxiv.org/abs/2201.10445
 }

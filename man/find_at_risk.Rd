@@ -16,12 +16,7 @@ The terms (on the right of the \code{~} operator) must include the treatment arm
 }
 \value{
 Data frame
-}
-\description{
-This function calculates the number of individuals at risk and number of events at each distinct event time
-(and censoring time if \code{include_cens==TRUE}).
-}
-\details{
+
 Returns a data frame with the following columns:
 \itemize{
 \item time \code{t_j}
@@ -30,6 +25,10 @@ Returns a data frame with the following columns:
 \item number of individuals at risk in each of the treatment groups just before time \code{t_j}
 \item combined number of individuals at risk in both treatment groups just before time \code{t_j}
 }
+}
+\description{
+This function calculates the number of individuals at risk and number of events at each distinct event time
+(and censoring time if \code{include_cens==TRUE}).
 }
 \examples{
 library(wlrt)
@@ -46,8 +45,8 @@ sim_data <- sim_events_delay(
     rec_period = 12,
     rec_power = 1
   ),
-  n_c=50,
-  n_e=50,
+  n_c=5,
+  n_e=5,
   max_cal_t = 36
 )
 #with censoring times included

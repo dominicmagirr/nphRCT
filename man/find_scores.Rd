@@ -25,9 +25,9 @@ The terms (on the right of the \code{~} operator) must include the treatment arm
 (log-rank \code{"lr"}, Fleming-Harrington \code{"fh"}, modestly weighted \code{"mw"}) or pseudovalue-based scores (restricted mean survival time \code{"rmst"},
 milestone analysis \code{"ms"})}
 
-\item{t_star}{Parameter \eqn{t*} in the modestly weighted (\code{"mw"}) test, see Details.}
+\item{t_star}{Parameter \eqn{t^*} in the modestly weighted (\code{"mw"}) test, see Details.}
 
-\item{s_star}{Parameter \eqn{s*} in the modestly weighted (\code{"mw"}) test, see Details.}
+\item{s_star}{Parameter \eqn{s^*} in the modestly weighted (\code{"mw"}) test, see Details.}
 
 \item{rho}{Parameter \eqn{\rho} in the Fleming-Harrington (\code{"fh"}) test, see Details.}
 
@@ -36,23 +36,19 @@ milestone analysis \code{"ms"})}
 \item{tau}{Parameter \eqn{\tau} in the RMST (\code{"rmst"}) or milestone analysis  (\code{"ms"}) test.}
 }
 \value{
-Data frame. Each row corresponds to an event time (including censoring times if \code{include_cens=TRUE}).
+Data frame. Each row corresponds to an event or censoring time.
 At each time specified in \code{t_j} the columns indicate
 \itemize{
-\item \code{score_censored} the scores for each censoring at time \code{t_j} in the permutation test formulation
-\item \code{score_event} the scores for each event at time \code{t_j} in the permutation test formulation
 \item \code{event} the event indicator
 \item \code{group} the treatment arm indicator
-\item \code{score} the value of the score for this individual, equal to \code{score_censored} if the individual is censored
-and equal to \code{score_event} if the individual experienced the event
+\item \code{score} the assigned score at time \code{t_j}
 \item \code{standardized_score} the value of \code{score} standardized to be between -1 and 1
-\item \code{rank} the rank of the ordered event and censoring times, with higher numbers indicating
-later times \code{t_j}
 }
 }
 \description{
-Weighted log-rank tests can also be formulated as a permutation test, see Magirr (2021).
-This function calculates the scores for the permutation test formulation
+Weighted log-rank tests can also be thought in terms of assigning a score to the each of
+the events (including censoring) and comparing the average score on each arm, see Magirr (2021).
+This function calculates the scores
 for different types of weighted log-rank test,
 the modestly-weighted log-rank test and the Fleming-Harrington (\eqn{\rho},\eqn{\gamma})
 test, in addition to the standard log-rank test.

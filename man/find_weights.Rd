@@ -25,9 +25,9 @@ The terms (on the right of the \code{~} operator) must include the treatment arm
 Either \code{"lr"} for a standard log-rank test, \code{"mw"} for a modestly-weighted log-rank test,
 or \code{"fh"} for the Fleming-Harrington rho-gamma family.}
 
-\item{t_star}{Parameter \eqn{t*} in the modestly weighted (\code{"mw"}) test, see Details.}
+\item{t_star}{Parameter \eqn{t^*} in the modestly weighted (\code{"mw"}) test, see Details.}
 
-\item{s_star}{Parameter \eqn{s*} in the modestly weighted (\code{"mw"}) test, see Details.}
+\item{s_star}{Parameter \eqn{s^*} in the modestly weighted (\code{"mw"}) test, see Details.}
 
 \item{rho}{Parameter \eqn{\rho} in the Fleming-Harrington (\code{"fh"}) test, see Details.}
 
@@ -47,11 +47,6 @@ the modestly-weighted log-rank test and the Fleming-Harrington (\eqn{\rho},\eqn{
 \details{
 Select which of the three tests to perform using argument \code{method}.
 The output is calculated as outlined in \code{vignette("weighted_log_rank_tests", package="wlrt")}.
-
-For the weighted log rank tests, the weights are
-multiplied by the observed minus expected value at each event time.
-The weights that correspond to censoring times are therefore not used in the weighted log-rank test,
-however they are used in the \code{find_scores} function.
 }
 \examples{
 library(wlrt)
@@ -68,8 +63,8 @@ sim_data <- sim_events_delay(
     rec_period = 12,
     rec_power = 1
   ),
-  n_c=50,
-  n_e=50,
+  n_c=5,
+  n_e=5,
   max_cal_t = 36
 )
 #example setting t_star
