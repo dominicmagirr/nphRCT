@@ -22,11 +22,6 @@
 #' Select which of the three tests to perform using argument `method`.
 #' The output is calculated as outlined in `vignette("weighted_log_rank_tests", package="wlrt")`.
 #' 
-#' For the weighted log rank tests, the weights are
-#' multiplied by the observed minus expected value at each event time.
-#' The weights that correspond to censoring times are therefore not used in the weighted log-rank test, 
-#' however they are used in the `find_scores` function.
-#' 
 #' @examples
 #' library(wlrt)
 #' set.seed(1)
@@ -42,8 +37,8 @@
 #'     rec_period = 12,
 #'     rec_power = 1
 #'   ),
-#'   n_c=50,
-#'   n_e=50,
+#'   n_c=5,
+#'   n_e=5,
 #'   max_cal_t = 36
 #' )
 #' #example setting t_star
