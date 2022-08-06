@@ -4,17 +4,17 @@
 #' survival times on the control arm and experimental arm simulated from an exponential distribution 
 #' or piecewise exponential distribution.
 #' @param event_model List containing information to simulate event times, including:
-#' - `duration_c` the vector of durations corresponding to each of the periods of the control arm.
-#' - `duration_e` is the vector of durations corresponding to each of the periods of the experimental arm.
-#' - `lambda_c` is the vector of parameters \eqn{\lambda} corresponding to each of the periods of the control arm.
-#' - `lambda_e` is the vector of parameters \eqn{\lambda} corresponding to each of the periods of the experimental arm.
+#' - `duration_c` Vector of durations corresponding to each of the periods of the control arm.
+#' - `duration_e` Vector of durations corresponding to each of the periods of the experimental arm.
+#' - `lambda_c` Vector of parameters \eqn{\lambda} in the exponential distribution corresponding to each of the periods of the control arm.
+#' - `lambda_e` Vector of parameters \eqn{\lambda} in the exponential distribution corresponding to each of the periods of the experimental arm.
 #' @param recruitment_model List containing information to simulate recruitment times, including:
 #' - `rec_model` Character string specifying the type of recruitment model. Either the power model `"power"` 
-#' or piecewise constant `"pw_constant"`.
-#' - `rec_power` Parameter used to model recruitment according to power model. 
-#' - `rec_period` Parameter used to model recruitment according to power model. 
-#' - `rec_rate` Parameter used to model recruitment according to piecewise constant model. 
-#' - `rec_duration` Parameter used to model recruitment according to piecewise constant model. 
+#' or piecewise constant model `"pw_constant"`.
+#' - `rec_power` Parameter used to model recruitment according to power model, see Details. 
+#' - `rec_period` Parameter used to model recruitment according to power model, see Details. 
+#' - `rec_rate` Parameter used to model recruitment according to piecewise constant model, see Details. 
+#' - `rec_duration` Parameter used to model recruitment according to piecewise constant model, see Details. 
 #' @param max_cal_t Calendar time at which the trial ends, all observations are censored at this time.
 #' @param n_c Number of individuals on the control arm 
 #' @param n_e Number of individuals on the event arm 
@@ -30,21 +30,21 @@
 #' Recruitment is modeled using either the power model or the piecewise constant model. 
 #' 
 #' The power model is defined as:
-#' \eqn{P(recruited before T) = (T / rec_period) ^ rec_power}, where
-#' \eqn{rec_period} is the time at the end of recruitment period, and \eqn{rec_power} controls the rate of recruitment.
+#' \eqn{P(recruited\_before\_T) = (T / rec\_period) ^ {rec\_power}}, where
+#' \eqn{rec\_period} is the time at the end of recruitment period, and \eqn{rec\_power} controls the rate of recruitment.
 #' 
 #' Alternatively, recruitment can be modelled using the piecewise constant model. 
 #' In the simple case with only one time period defined in `rec_duration`, the times between each of the individuals entering follow-up
 #' are samples from the exponential distribution with rate parameter \eqn{\lambda},
-#' \eqn{f(t)=\lambda exp(-\lambda t)}. The function returns `n` recruitment times, regardless of the 
+#' \eqn{f(t)=\lambda exp(-\lambda t)}. The number of recruitment times defined in `n_c` or `n_e` is returned, regardless of the 
 #' length of duration `rec_duration.`
 #' 
 #' In the case with multiple time periods defined in `rec_duration`, the number of events in each period is sampled from the 
-#' Poisson distribution \eqn{P(K=k)=\lambda^k \exp{-\lambda}/k!}, where \eqn{k} is the number of events. The rate parameter 
-#' \eqn{\lambda} is equal to `rec_rate` multiplied by the duration of the time period in `rec_duration`. The \eqn{K} recruitment times 
+#' Poisson distribution \eqn{P(K=k)=\lambda^k \exp{(-\lambda}/k!)}, where \eqn{k} is the number of events. The rate parameter 
+#' \eqn{\lambda} is equal to `rec_rate` multiplied by the duration of the time period in `rec_duration`. The recruitment times 
 #' are then sampled uniformly from the corresponding time period. In the case that
 #' insufficient recruitment times have been simulated by the end of the last time period, the additional recruitment times will be 
-#' simulated after the end of the last time period using the method described for when there is one time period.
+#' simulated after the end of the last time period.
 #'  
 #' All observations are censored at the calendar time defined in argument `max_cal_t`.
 #'
@@ -74,7 +74,7 @@ sim_events_delay<-function(
   recruitment_model,
   n_c,
   n_e,
-  max_cal_t=36
+  max_cal_t
 ){
   rec_model <- match.arg(recruitment_model$rec_model, c("power", "pw_constant"))
   n_total<-n_c+n_e
