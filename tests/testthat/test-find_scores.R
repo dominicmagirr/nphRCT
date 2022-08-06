@@ -15,6 +15,7 @@ sim_data <- sim_events_delay(
   n_e=50,
   max_cal_t = 36
 )
+
 df_scores_mw<-find_scores(formula=Surv(event_time,event_status)~group,
                           data=sim_data,
                           method="mw",
@@ -30,33 +31,16 @@ df_scores_ms<-find_scores(formula=Surv(event_time,event_status)~group,
                           method="ms",
                           tau = 4
 )
-save_file <- function(code){
-  path <- tempfile(fileext = ".RDS")
-  saveRDS(code,file = path)
-  path
-}
 
-
-
-save_png <- function(code) {
+save_png <- function(code, width = 400, height = 400) {
   path <- tempfile(fileext = ".png")
-  png(file = path)
+  png(path, width = width, height = height)
   on.exit(dev.off())
   code
+  
   path
 }
 
-for (type in c("mw","rmst","ms")){
-  df_scores<-get(paste0("df_scores_",type))
-  df<-df_scores$df
-  
-  test_that("should add to zero by definition", {
-    expect_equal(sum(c(rowSums(df[,grep("n_event_",names(df))])*df$score_event+
-                         rowSums(df[,grep("n_censored_",names(df))])*df$score_censored)), 0)
-  })
-  
-  test_that("plot", {
-  expect_snapshot_file(save_png(
-    plot(df_scores)), paste0("plot_",type,".png"),cran = TRUE)
-  })
-}
+expect_snapshot_file(save_png(plot(df_scores_mw)), paste0("plot_mw.png"),cran = TRUE)
+expect_snapshot_file(save_png(plot(df_scores_rmst)), paste0("plot_rmst.png"),cran = TRUE)
+expect_snapshot_file(save_png(plot(df_scores_ms)), paste0("plot_ms.png"),cran = TRUE)
