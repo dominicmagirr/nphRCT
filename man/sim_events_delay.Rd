@@ -68,7 +68,7 @@ simulated after the end of the last time period.
 All observations are censored at the calendar time defined in argument \code{max_cal_t}.
 }
 \examples{
-library(wlrt)
+library(nphRCT)
 set.seed(1)
 sim_data <- sim_events_delay(
   event_model=list(

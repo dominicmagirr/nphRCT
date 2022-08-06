@@ -46,10 +46,10 @@ the modestly-weighted log-rank test and the Fleming-Harrington (\eqn{\rho},\eqn{
 }
 \details{
 Select which of the three tests to perform using argument \code{method}.
-The output is calculated as outlined in \code{vignette("weighted_log_rank_tests", package="wlrt")}.
+The output is calculated as outlined in \code{vignette("weighted_log_rank_tests", package="nphRCT")}.
 }
 \examples{
-library(wlrt)
+library(nphRCT)
 set.seed(1)
 sim_data <- sim_events_delay(
   event_model=list(

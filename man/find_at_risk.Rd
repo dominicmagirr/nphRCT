@@ -31,7 +31,7 @@ This function calculates the number of individuals at risk and number of events 
 (and censoring time if \code{include_cens==TRUE}).
 }
 \examples{
-library(wlrt)
+library(nphRCT)
 set.seed(1)
 sim_data <- sim_events_delay(
   event_model=list(

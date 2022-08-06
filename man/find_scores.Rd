@@ -55,10 +55,10 @@ test, in addition to the standard log-rank test.
 }
 \details{
 Select which of the tests to perform using argument \code{method}.
-For the weighted log-rank tests, the output is calculated as outlined in \code{vignette("weighted_log_rank_tests", package="wlrt")}.
+For the weighted log-rank tests, the output is calculated as outlined in \code{vignette("weighted_log_rank_tests", package="nphRCT")}.
 }
 \examples{
-library(wlrt)
+library(nphRCT)
 set.seed(1)
 sim_data <- sim_events_delay(
   event_model=list(
