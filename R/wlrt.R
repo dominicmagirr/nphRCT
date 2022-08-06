@@ -13,16 +13,19 @@
 #' @template rho
 #' @template gamma
 #' @return List containing the outcome of the weighted log-rank test.
-#' `u` is the test statistic U for the weighted log-rank test
-#' `v_u` is the variance of test statistic U
-#' `z` is the Z-score
-#' `trt_group` indicates which of the treatment arms the test statistic U corresponds to
+#' - `u` is the test statistic U for the weighted log-rank test
+#' - `v_u` is the variance of test statistic U
+#' - `z` is the Z-score
+#' - `trt_group` indicates which of the treatment arms the test statistic U corresponds to
 #'
+#' In the presence of multiple strata, the results of the test on each individual strata is returned, in addition to the combined test that was proposed by 
+#' Magirr and Jiménez (2022), see `vignette("weighted_log_rank_tests", package="wlrt")`.
 #' @details
 #'
 #' Select which of the three tests to perform using argument `method`.
 #' The output is calculated as outlined in `vignette("weighted_log_rank_tests", package="wlrt")`.
 #'
+#' 
 #' @examples
 #' library(wlrt)
 #' set.seed(1)
@@ -96,6 +99,10 @@
 #' Magirr, D. and Burman, C.F., 2019.
 #' Modestly weighted logrank tests.
 #' Statistics in medicine, 38(20), 3782-3790.
+#' 
+#' Magirr, D. and Jiménez, J. (2022)
+#' Stratified modestly-weighted log-rank tests in settings with an anticipated delayed separation of survival curves
+#' PREPRINT at https://arxiv.org/abs/2201.10445
 #' @export
 
 wlrt <- function(formula,
