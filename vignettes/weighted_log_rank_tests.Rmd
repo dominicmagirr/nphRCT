@@ -40,7 +40,7 @@ Additionally, the `sim_events_delay` function censors all observations at the ca
 Here we create a simulated dataset with 5 individuals on each arm. Assume that one unit of time is equal to one month. From entering the study until 6 months both arms have the same $\lambda$ parameter, with a median event time of 9 months. From 6 months, the experimental arm has a lower hazard rate, with a median event time of 18 months. Setting `rec_period = 12` and `rec_power = 1` means that individuals are recruited at a uniform rate over 12 months.
 
 ```{r 1}
-library(wlrt)
+library(nphRCT)
 set.seed(1)
 sim_data <- sim_events_delay(
   event_model=list(
