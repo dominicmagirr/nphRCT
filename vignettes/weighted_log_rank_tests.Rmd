@@ -31,9 +31,9 @@ Firstly, looking at the event model. The function `sim_events_delay` assumes tha
 f(t)=\lambda \exp(-\lambda t)
 \]
 
-The rate parameters are set using the argument `lambda_c` for the control arm and `lambda_e` for the experimental arm. To use the piecewise version, this argument is set to a vector with length corresponding to the number of pieces. The duration of each piece is set using parameter `duration_c` and `duration_e`.
+The rate parameters are set using the argument `lambda_c` for the control arm and `lambda_e` for the experimental arm. To use the piecewise version, set this argument a vector with a value for each piece. The duration of each piece is set using parameter `duration_c` and `duration_e`.
 
-Secondly, looking at the recruitment model. The recruitment can be modelled using either a power model or a piecewise constant model. See `help(sim_events_delay)` more details about this models.
+Secondly, looking at the recruitment model. The recruitment can be modeled using either a power model or a piecewise constant model. See `help(sim_events_delay)` more details about these models.
 
 Additionally, the `sim_events_delay` function censors all observations at the calendar time `max_cal_t`.
 
@@ -149,7 +149,7 @@ where the variance, $V^W$, is equal to
 
 The Z-statistic is then simply calculated in the usual way by dividing the test statistic $U$ by the square root of its variance.
 
-To perform the full weighted log-rank test, use the function `wlrt` which outputs the test statistic, its variance, the Z-statistic and the name of the treatment group (in column `group`) which is selected to calculate the observed and expected values for in the weighted log-rank test formula.
+To perform the full weighted log-rank test, use the function `wlrt`. This outputs the test statistic, its variance, the Z-statistic and the name of the treatment group the test corresponds to.
 
 ```{r 6}
 wlrt(formula=Surv(event_time,event_status)~group,
@@ -173,7 +173,7 @@ C_j=-\sum_{i=1}w_i\frac{d_i}{n_i}
 c_j=C_j+w_j
 \]
 
-These scores can be calculated using the function `find_scores` in the following way. Plotting these scores against the rank of the event times provides an intuitive explanation of the issues of using the Fleming-Harrington test, see Magirr (2021).
+These scores can be calculated using the function `find_scores` in the following way. Plotting these scores against the rank of the event times provides an intuitive explanation of the issues of using the Fleming-Harrington test as it makes sense that the scores for the events are decreasind with time, see Magirr (2021).
 
 ```{r 7}
 df_scores_mw<-find_scores(formula=Surv(event_time,event_status)~group,
