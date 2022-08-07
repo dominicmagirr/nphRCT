@@ -49,7 +49,7 @@ df <- poplar %>%
   select(PtID, ECOGGR, OS, OS.CNSR, TRT01P) %>%
   mutate(event = -1 * (OS.CNSR - 1),
          time = OS,
-         arm = ifelse(TRT01P == "Docetaxel", "0", "1")) %>% 
+         arm = ifelse(TRT01P == "Docetaxel", "control", "experimental")) %>% 
   select(time, event, arm) %>%
   as.data.frame()
 
@@ -72,7 +72,7 @@ df_lr <- find_scores(formula=Surv(time, event) ~ arm,
 
 p_lrt <- plot(df_lr,title="Log rank")
 
-cowplot::plot_grid(p_km[[1]],p_lrt)
+cowplot::plot_grid(p_km[[1]],p_lrt,rel_widths=c(2,3))
 ```
 
 
@@ -89,7 +89,7 @@ df_rmst_pseudo <- find_scores(formula=Surv(time, event) ~ arm,
                      data=df,
                      method = "rmst")
 p_rmst <- plot(df_rmst_pseudo, title = "RMST")
-cowplot::plot_grid(p_km[[1]],p_rmst)
+cowplot::plot_grid(p_km[[1]],p_rmst,rel_widths=c(2,3))
 ```
 
 Next we might try a statistic based on the difference in milestone survival probabilities at 18 months (via the Kaplan-Meier estimates), which is almost like giving everyone with an event prior to 18 months a score of 1 and everyone still alive at 18 months a score of -1 (there is a small correction for censoring).
@@ -100,7 +100,7 @@ df_milestone_pseudo <- find_scores(formula=Surv(time, event) ~ arm,
                      data=df,
                      method = "ms")
 p_surv <- plot(df_milestone_pseudo, title = "Milestone")
-cowplot::plot_grid(p_km[[1]],p_surv)
+cowplot::plot_grid(p_km[[1]],p_surv,rel_widths=c(2,3))
 ```
 
 ## Weighted log-rank tests
@@ -114,7 +114,7 @@ df_mwlrt <- find_scores(formula=Surv(time, event) ~ arm,
                      t_star=9,
                      method = "mw")
 p_mwlrt <- plot(df_mwlrt,title="MWLRT")
-cowplot::plot_grid(p_km[[1]],p_mwlrt)
+cowplot::plot_grid(p_km[[1]],p_mwlrt,rel_widths=c(2,3))
 ```
 
 This might be thought of as intermediate between a log-rank test and a milestone test. It's similar to a milestone analysis in the sense that it is a contrast of the later parts of the survival curves, with early events all getting a score of 1. However, unlike the milestone analysis, the contrast does not focus on just one timepoint. Rather, it is an average contrast over late follow-up times with better outomes receiving gradually better scores, and in this sense is more like the log-rank test. 
