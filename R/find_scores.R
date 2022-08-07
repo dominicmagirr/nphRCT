@@ -154,8 +154,8 @@ plot.df_score<-function(x,...){
   levels(df[["event"]])<-c( "event","censored")
   
   df[["event_group"]]<-factor(paste(df[["group"]],df[["event"]],sep=", "),
-                              levels=c(paste(gl1,"event",sep=", "),paste(gl2,"event",sep="\n"),
-                                       paste(gl1,"censored",sep=", "),paste(gl2,"censored",sep="\n")))
+                              levels=c(paste(gl1,"event",sep=", "),paste(gl2,"event",sep=", "),
+                                       paste(gl1,"censored",sep=", "),paste(gl2,"censored",sep=", ")))
   
   args <- list(col="",x="Time",y="Score")
   inargs <- list(...)
@@ -164,6 +164,6 @@ plot.df_score<-function(x,...){
   
   ggplot2::ggplot(df, ggplot2::aes_string(x="t_j", y="standardized_score",col="event_group")) + ggplot2::geom_point() +
     ggplot2::ylim(-1.1,1.1)+labels+ ggplot2::scale_color_manual(values = c("#F8766D", "#00BFC4", "lightsalmon", "darkslategray2"))+
-    ggplot2::geom_hline(yintercept = mean(df[df[["group"]]==gl1,"score"]), color="#F8766D")+
-    ggplot2::geom_hline(yintercept = mean(df[df[["group"]]==gl2,"score"]), color="#00BFC4",type="dashed")
+    ggplot2::geom_hline(yintercept = mean(df[df[["group"]]==gl1,"score"]), color="#F8766D",linetype=2)+
+    ggplot2::geom_hline(yintercept = mean(df[df[["group"]]==gl2,"score"]), color="#00BFC4",linetype=2)
   }
