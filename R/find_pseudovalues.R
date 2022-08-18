@@ -108,7 +108,16 @@ find_pseudovalues <- function(formula,
                                  score = -p_v_rmst )
     df_rmst_pseudo<-df_rmst_pseudo[order(df_rmst_pseudo[["t_j"]]),]
     
-    return(df_rmst_pseudo)
+    
+    max_a <- max(df_rmst_pseudo$score)
+    min_a <- min(df_rmst_pseudo$score)
+    A = 2 / (max_a - min_a)
+    B = 1 - A * max_a
+    df_rmst_pseudo$standardized_score <- df_rmst_pseudo$score * A + B
+    
+    out<-list(df=df_rmst_pseudo)
+    class(out)<-"df_score"
+    return(out)
   }
   if(method=="ms"){
     n <- length(data[[time_col]])
@@ -139,7 +148,15 @@ find_pseudovalues <- function(formula,
                                  score = -p_v_surv )
     df_milestone_pseudo<-df_milestone_pseudo[order(df_milestone_pseudo[["t_j"]]),]
     
-    return(df_milestone_pseudo)
+    max_a <- max(df_milestone_pseudo$score)
+    min_a <- min(df_milestone_pseudo$score)
+    A = 2 / (max_a - min_a)
+    B = 1 - A * max_a
+    df_milestone_pseudo$standardized_score <- df_milestone_pseudo$score * A + B
+    
+    out<-list(df=df_milestone_pseudo)
+    class(out)<-"df_score"
+    return(out)
   }
 }
 
