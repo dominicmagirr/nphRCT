@@ -44,7 +44,13 @@ Let's take the example of the log-rank statistic applied to the data from the PO
 library(nphRCT)
 library(dplyr)
 library(survival)
-data("poplar")
+
+template <- tempfile(fileext = ".xlsx")
+httr::GET(url = "https://static-content.springer.com/esm/art%3A10.1038%2Fs41591-018-0134-3/MediaObjects/41591_2018_134_MOESM3_ESM.xlsx", httr::write_disk(template))
+poplar <- readxl::read_excel(template,
+                   sheet = 2)
+
+
 df <- poplar %>% 
   select(PtID, ECOGGR, OS, OS.CNSR, TRT01P) %>%
   mutate(event = -1 * (OS.CNSR - 1),
