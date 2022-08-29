@@ -163,8 +163,9 @@ plot.df_score<-function(x,...){
   labels<-do.call(ggplot2::labs,args)
   
   ggplot2::ggplot(df, ggplot2::aes_string(x="t_j", y="standardized_score",col="event_group")) + ggplot2::geom_point() +
-    ggplot2::ylim(-1.1,1.1)+labels+ ggplot2::scale_color_manual(values = c("#F8766D", "#00BFC4", "lightsalmon", "darkslategray2"))+
+    ggplot2::ylim(-1.1,1.1)+
+    labels+ ggplot2::scale_color_manual(values = c("#F8766D", "#00BFC4", "lightsalmon", "darkslategray2"))+
     ggplot2::geom_hline(yintercept = mean(df[df[["group"]]==gl1,"standardized_score"]), color="#F8766D",linetype=2)+
     ggplot2::geom_hline(yintercept = mean(df[df[["group"]]==gl2,"standardized_score"]), color="#00BFC4",linetype=2)+
-    theme_classic()
+    ggplot2::theme_classic()
   }

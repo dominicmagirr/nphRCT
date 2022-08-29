@@ -1,10 +1,11 @@
 Package: nphRCT
-Title: What the Package Does (One Line, Title Case)
+Title: Non-proportional hazards in Randomized Controlled Trials
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "isobel.barrott@gmail.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+    c(person("Dominic", "Magirr", email = "dominic.magirr@gmail.com", role = c("aut", "cre")),
+      person("Isobel", "Barrott", email = "isobel.barrott@gmail.com", role = c("aut")),
+      person("Jose", "Jimenez", email = "jjimenezm1989@gmail.com", role = c("ctb")))
+Description: Perform a stratified weighted log-rank tests in a randomized controlled trial. Tests can be visualized as a difference in average score on the two treatment arms.  
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -19,7 +20,7 @@ Suggests:
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Depends: 
-    R (>= 2.10)
+    R (>= 3.5.0)
 Imports:
     ggplot2,
     purrr,

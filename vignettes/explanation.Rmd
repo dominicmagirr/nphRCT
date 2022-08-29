@@ -44,26 +44,32 @@ Let's take the example of the log-rank statistic applied to the data from the PO
 library(nphRCT)
 library(dplyr)
 library(survival)
+library(ggplot2)
 
-template <- tempfile(fileext = ".xlsx")
-httr::GET(url = "https://static-content.springer.com/esm/art%3A10.1038%2Fs41591-018-0134-3/MediaObjects/41591_2018_134_MOESM3_ESM.xlsx", httr::write_disk(template))
-poplar <- readxl::read_excel(template,
-                   sheet = 2)
+#template <- tempfile(fileext = ".xlsx")
+#httr::GET(url = "https://static-content.springer.com/esm/art%3A10.1038%2Fs41591-018-0134-3/MediaObjects/41591_2018_134_MOESM3_ESM.xlsx", httr::write_disk(template))
+#poplar <- readxl::read_excel(template,
+#                   sheet = 2)
 
 
-df <- poplar %>% 
-  select(PtID, ECOGGR, OS, OS.CNSR, TRT01P) %>%
-  mutate(event = -1 * (OS.CNSR - 1),
-         time = OS,
-         arm = ifelse(TRT01P == "Docetaxel", "control", "experimental")) %>% 
-  select(time, event, arm) %>%
-  as.data.frame()
+#df <- poplar %>% 
+#  select(PtID, ECOGGR, OS, OS.CNSR, TRT01P) %>%
+#  mutate(event = -1 * (OS.CNSR - 1),
+#         time = OS,
+#         arm = ifelse(TRT01P == "Docetaxel", "control", "experimental")) %>% 
+#  select(time, event, arm) %>%
+#  as.data.frame()
+
+### TO DO: put this data in the package (as rdata?)
+data("moderate_cross")
+dat <- moderate_cross
+
 
 km <- survfit(Surv(time, event) ~ arm,
-                  data = df)
+                  data = dat)
 
 p_km <- survminer::ggsurvplot(km, 
-                      data = df, 
+                      data = dat, 
                       risk.table = TRUE, 
                       break.x.by = 6,
                       legend.title = "",
@@ -73,7 +79,7 @@ p_km <- survminer::ggsurvplot(km,
                       legend = c(0.8,0.8))
 
 df_lr <- find_scores(formula=Surv(time, event) ~ arm, 
-                     data=df,
+                     data=dat,
                      method = "lr")
 
 p_lrt <- plot(df_lr,title="Log rank")
@@ -92,18 +98,17 @@ I think this perspective becomes helpful when we start to compare alternative te
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 df_rmst_pseudo <- find_scores(formula=Surv(time, event) ~ arm, 
                      tau=18,
-                     data=df,
+                     data=dat,
                      method = "rmst")
 p_rmst <- plot(df_rmst_pseudo, title = "RMST")
 cowplot::plot_grid(p_km[[1]],p_rmst,rel_widths=c(2,3))
 ```
 
-Next we might try a statistic based on the difference in milestone survival probabilities at 18 months (via the Kaplan-Meier estimates), which is almost like giving everyone with an event prior to 18 months a score of 1 and everyone still alive at 18 months a score of -1 (there is a small correction for censoring).
-
+Next we might try a statistic based on the difference in milestone survival probabilities at 12 months (via the Kaplan-Meier estimates). If there were no censoring prior to 12 months, this would be like giving everyone with an event prior to 12 months a score of 1 and everyone still alive at 12 months a score of -1. Owing to censoring, however, events closer to 12 months are up-weighted. 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 df_milestone_pseudo <- find_scores(formula=Surv(time, event) ~ arm, 
-                     tau=18,
-                     data=df,
+                     tau=12,
+                     data=dat,
                      method = "ms")
 p_surv <- plot(df_milestone_pseudo, title = "Milestone")
 cowplot::plot_grid(p_km[[1]],p_surv,rel_widths=c(2,3))
@@ -116,7 +121,7 @@ Weighted log-rank tests can also be compared in this framework. For example, a [
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 df_mwlrt <- find_scores(formula=Surv(time, event) ~ arm, 
-                     data=df,
+                     data=dat,
                      t_star=9,
                      method = "mw")
 p_mwlrt <- plot(df_mwlrt,title="MWLRT")
@@ -127,7 +132,7 @@ This might be thought of as intermediate between a log-rank test and a milestone
 
 ## Early versus late contrasts
 
-By looking carefully at these graphs we can get a sense about whether a particular test is putting more emphasis on early parts of follow-up or late parts of follow-up. Here, for example, we see that for RMST the scores have a wide range at early follow-up times but do not change at later follow-up times, and vice-versa for the milestone and modestly-weighted tests. The log-rank test has more gradually changing scores across the whole follow-up period.
+By looking carefully at these graphs we can get a sense about whether a particular test is putting more emphasis on early parts of follow-up or late parts of follow-up. Roughly speaking, if, at a particular Time, there is a large difference betwen the score given to an observed event and the score given to a censored observation, then this indicates that heavy emphasis is being given to that timepoint. Here, for example, we see that for RMST the scores give high emphasis to early follow-up times, and vice-versa for the milestone and modestly-weighted tests. The log-rank test has more gradually changing scores across the whole follow-up period.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 cowplot::plot_grid(p_rmst, p_lrt,p_mwlrt,p_surv, nrow = 2)

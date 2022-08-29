@@ -13,6 +13,7 @@
 #' @template rho
 #' @template gamma
 #' @template include_cens
+#' @param timefix Deal with floating point issues (as in the survival package). Default is TRUE. May need to set FALSE for simulated data.
 #' @return Vector of weights in the weighted log-rank test.
 #' The weights correspond to the ordered, distinct event times (and censoring times if 
 #' `include_cens=TRUE`).
@@ -59,13 +60,14 @@
 #' @export
 
 find_weights<-function(formula,
-                           data,
-                           method,
-                           t_star = NULL,
-                           s_star = NULL,
-                           rho = NULL,
-                           gamma = NULL,
-                           include_cens=FALSE){
+                       data,
+                       method,
+                       t_star = NULL,
+                       s_star = NULL,
+                       rho = NULL,
+                       gamma = NULL,
+                       include_cens=FALSE,
+                       timefix = TRUE){
 
   check_formula(formula=formula,data=data)
   formula_vars <- all.vars(formula)
@@ -81,7 +83,7 @@ find_weights<-function(formula,
   formula_km<-stats::as.formula(paste0("Surv(",time_col,",",status_col,")~1"))
   km_fit <- survival::survfit(formula_km,
                                 data = data,
-                                timefix = FALSE)
+                                timefix = timefix)
   if(include_cens==TRUE){
     t_j <- km_fit$time
     S_hat <- km_fit$surv

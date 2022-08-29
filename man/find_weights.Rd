@@ -12,7 +12,8 @@ find_weights(
   s_star = NULL,
   rho = NULL,
   gamma = NULL,
-  include_cens = FALSE
+  include_cens = FALSE,
+  timefix = TRUE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ or \code{"fh"} for the Fleming-Harrington rho-gamma family.}
 \item{gamma}{Parameter \eqn{\gamma} in the Fleming-Harrington (\code{"fh"}) test, see Details.}
 
 \item{include_cens}{Boolean indicating whether to include values corresponding to censoring times}
+
+\item{timefix}{Deal with floating point issues (as in the survival package). Default is TRUE. May need to set FALSE for simulated data.}
 }
 \value{
 Vector of weights in the weighted log-rank test.
