@@ -30,7 +30,7 @@ save_file <- function(code){
 }
 
 test_that("power model example snapshot", {
-  expect_snapshot_file(save_file(sim_data_power), "sim_data_power.RDS",cran = TRUE)
+  expect_snapshot_file(save_file(sim_data_power), "sim_data_power.RDS",cran = FALSE)
 })
 
 
@@ -58,7 +58,7 @@ test_that("correct number columns", {expect_identical(ncol(sim_data_pw), 3L)})
 test_that("no NAs", {expect_false(any(is.na(sim_data_pw)))})
 
 test_that("piecewise constant model example snapshot", {
-  expect_snapshot_file(save_file(sim_data_pw), "sim_data_pw.RDS",cran = TRUE)
+  expect_snapshot_file(save_file(sim_data_pw), "sim_data_pw.RDS",cran = FALSE)
 })
 
 #Constant
@@ -85,7 +85,7 @@ test_that("correct number columns", {expect_identical(ncol(sim_data_constant), 3
 test_that("no NAs", {expect_false(any(is.na(sim_data_constant)))})
 
 test_that("piecewise constant model example snapshot", {
-  expect_snapshot_file(save_file(sim_data_constant), "sim_data_constant.RDS",cran = TRUE)
+  expect_snapshot_file(save_file(sim_data_constant), "sim_data_constant.RDS",cran = FALSE)
 })
 
 

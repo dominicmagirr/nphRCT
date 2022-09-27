@@ -47,7 +47,7 @@ At each time specified in \code{t_j} the columns indicate
 }
 \description{
 Weighted log-rank tests can also be thought in terms of assigning a score to the each of
-the events (including censoring) and comparing the average score on each arm, see Magirr (2021).
+the events (including censoring) and comparing the average score on each arm, see Magirr (2021) \url{doi:10.1002/pst.2091}.
 This function calculates the scores
 for different types of weighted log-rank test,
 the modestly-weighted log-rank test and the Fleming-Harrington (\eqn{\rho},\eqn{\gamma})
@@ -87,7 +87,7 @@ plot(df_scores)
 Magirr, D. (2021).
 Non-proportional hazards in immuno-oncology: Is an old perspective needed?.
 Pharmaceutical Statistics, 20(3), 512-527.
-DOI: 10.1002/pst.2091
+\url{doi:10.1002/pst.2091}
 
 Magirr, D. and Burman, C.F., 2019.
 Modestly weighted logrank tests.

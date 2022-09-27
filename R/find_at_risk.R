@@ -6,6 +6,7 @@
 #' @template formula
 #' @template data
 #' @template include_cens
+#' @param timefix Deal with floating point issues (as in the survival package). Default is TRUE. May need to set FALSE for simulated data.
 #' @return Data frame 
 #' 
 #' @return
@@ -47,7 +48,12 @@
 
 find_at_risk<-function(formula,
                        data,
-                       include_cens=TRUE){
+                       include_cens=TRUE,
+                       timefix = TRUE){
+  
+  
+  
+  
   check_formula(formula=formula,
                 data=data)
   
@@ -68,6 +74,14 @@ find_at_risk<-function(formula,
   trt <- data[[group_col]]
   times <- data[[time_col]]
   d_j <- data[[status_col]]
+  
+  
+  ################
+  ## timefix logic
+  ################
+  if (timefix){
+  times <- survival::aeqSurv(Surv(times, rep(1, length(times))))[,1]
+  }
   
   if (include_cens==TRUE){
     #number of events

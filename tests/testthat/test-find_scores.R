@@ -40,14 +40,14 @@ save_file <- function(code){
 }
 
 test_that("scores (mw) example snapshot", {
-  expect_snapshot_file(save_file(df_scores_mw), "df_scores_mw.RDS",cran = TRUE)
+  expect_snapshot_file(save_file(df_scores_mw), "df_scores_mw.RDS",cran = FALSE)
 })
 
 test_that("scores (rmst) example snapshot", {
-  expect_snapshot_file(save_file(df_scores_rmst), "df_scores_rmst.RDS",cran = TRUE)
+  expect_snapshot_file(save_file(df_scores_rmst), "df_scores_rmst.RDS",cran = FALSE)
 })
 
 test_that("scores (ms) example snapshot", {
-  expect_snapshot_file(save_file(df_scores_ms), "df_scores_ms.RDS",cran = TRUE)
+  expect_snapshot_file(save_file(df_scores_ms), "df_scores_ms.RDS",cran = FALSE)
 })
 

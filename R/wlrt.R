@@ -12,6 +12,7 @@
 #' @template s_star
 #' @template rho
 #' @template gamma
+#' @param timefix Deal with floating point issues (as in the survival package). Default is TRUE. May need to set FALSE for simulated data.
 #' @return List containing the outcome of the weighted log-rank test.
 #' - `u` is the test statistic U for the weighted log-rank test
 #' - `v_u` is the variance of test statistic U
@@ -94,7 +95,7 @@
 #' Magirr, D. (2021).
 #' Non-proportional hazards in immuno-oncology: Is an old perspective needed?.
 #' Pharmaceutical Statistics, 20(3), 512-527.
-#' DOI: 10.1002/pst.2091
+#' <doi:10.1002/pst.2091>
 #'
 #' Magirr, D. and Burman, C.F., 2019.
 #' Modestly weighted logrank tests.
@@ -102,7 +103,7 @@
 #' 
 #' Magirr, D. and Jiménez, J. (2022)
 #' Stratified modestly-weighted log-rank tests in settings with an anticipated delayed separation of survival curves
-#' PREPRINT at https://arxiv.org/abs/2201.10445
+#' PREPRINT at <https://arxiv.org/abs/2201.10445>
 #' @export
 
 wlrt <- function(formula,
@@ -111,7 +112,8 @@ wlrt <- function(formula,
                  t_star = NULL,
                  s_star = NULL,
                  rho = NULL,
-                 gamma = NULL) {
+                 gamma = NULL,
+                 timefix = TRUE) {
   
   check_formula(formula=formula,data=data)
   Surv<-survival::Surv
@@ -136,44 +138,51 @@ wlrt <- function(formula,
   data[[group_col]]<-as.factor(data[[group_col]])
     
   if (length(strata_index)==0) {
+    
     out<-wlrt_strata(formula=formula,
            data=data,
            method=method,
            t_star = t_star,
            s_star = s_star,
            rho = rho,
-           gamma = gamma)
-  }else{
-  formula<-stats::as.formula(paste0("Surv(",time_col,",",status_col,") ~ ",group_col))
-  for (str in strata_col){data[[str]]<-paste0(str, data[[str]])}
-  data_strata<-split(data, data[,strata_col])
-  if (min(purrr::map_dbl(data_strata, function(x)dim(x)[1])) < 5){
-    stop("Minimum stratum size is 5. Consider merging strata.")
+           gamma = gamma,
+           timefix = timefix)
+    
   }
-  test_w<-purrr::map_df(data_strata,
-                              wlrt_strata,
-                              formula=formula,
-                        method=method,
-                               t_star = t_star,
-                               s_star = s_star,
-                               rho = rho,
-                               gamma = gamma)
-  test_lr<-purrr::map_df(data_strata,
-                               wlrt_strata,
-                               formula=formula,
-                         method="lr")
-  
-  u_tilde_w_z<-sum(sqrt(test_lr$v_u)*test_w$z)
-  v_tilde_w_z<-sum(test_lr$v_u)
-  z_tilde_w_z<-u_tilde_w_z/sqrt(v_tilde_w_z)
-
-  out <- list(by_strata = data.frame(strata=names(data_strata),test_w),
-              combined = data.frame(
-                u = u_tilde_w_z,
-                v = v_tilde_w_z,
-                z = z_tilde_w_z,
-                trt_group = sort(unique(data[[group_col]]))[2]
-              ))
+  else{
+    formula<-stats::as.formula(paste0("Surv(",time_col,",",status_col,") ~ ",group_col))
+    for (str in strata_col){data[[str]]<-paste0(str, data[[str]])}
+    data_strata<-split(data, data[,strata_col])
+    if (min(purrr::map_dbl(data_strata, function(x)dim(x)[1])) < 5){
+      stop("Minimum stratum size is 5. Consider merging strata.")
+    }
+    test_w<-purrr::map_df(data_strata,
+                          wlrt_strata,
+                          formula=formula,
+                          method=method,
+                          t_star = t_star,
+                          s_star = s_star,
+                          rho = rho,
+                          gamma = gamma,
+                          timefix = timefix)
+    
+    test_lr<-purrr::map_df(data_strata,
+                           wlrt_strata,
+                           formula=formula,
+                           method="lr",
+                           timefix = timefix)
+    
+    u_tilde_w_z<-sum(sqrt(test_lr$v_u)*test_w$z)
+    v_tilde_w_z<-sum(test_lr$v_u)
+    z_tilde_w_z<-u_tilde_w_z/sqrt(v_tilde_w_z)
+    
+    out <- list(by_strata = data.frame(strata=names(data_strata),test_w),
+                combined = data.frame(
+                  u = u_tilde_w_z,
+                  v = v_tilde_w_z,
+                  z = z_tilde_w_z,
+                  trt_group = sort(unique(data[[group_col]]))[2]
+                ))
   }
   out
   
@@ -181,12 +190,14 @@ wlrt <- function(formula,
 
 
 wlrt_strata <- function(formula,
-                 data,
-                 method,
-                 t_star = NULL,
-                 s_star = NULL,
-                 rho = NULL,
-                 gamma = NULL) {
+                        data,
+                        method,
+                        t_star = NULL,
+                        s_star = NULL,
+                        rho = NULL,
+                        gamma = NULL,
+                        timefix = TRUE) {
+  
   formula_vars <- all.vars(formula)
   terms_vars<-formula_vars[-(1:2)]
   
@@ -198,12 +209,15 @@ wlrt_strata <- function(formula,
                   s_star = s_star,
                   rho = rho,
                   gamma = gamma,
-                  include_cens=FALSE)
+                  include_cens=FALSE,
+                  timefix = timefix)
 
   #at risk tables
   df_events<-find_at_risk(formula=formula,
                           data=data,
-                          include_cens=FALSE)
+                          include_cens=FALSE,
+                          timefix = timefix)
+  
   n_event_g <- as.matrix(df_events[, grep("n_event_",names(df_events))])
   n_event<-df_events$n_event
   n_risk_g <- as.matrix(df_events[, grep("n_risk_",names(df_events))])

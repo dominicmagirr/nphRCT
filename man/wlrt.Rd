@@ -121,7 +121,7 @@ wlrt(formula=Surv(event_time,event_status)~group+strata(ecog)+strata(sex),
 Magirr, D. (2021).
 Non-proportional hazards in immuno-oncology: Is an old perspective needed?.
 Pharmaceutical Statistics, 20(3), 512-527.
-DOI: 10.1002/pst.2091
+\url{doi:10.1002/pst.2091}
 
 Magirr, D. and Burman, C.F., 2019.
 Modestly weighted logrank tests.
@@ -129,5 +129,5 @@ Statistics in medicine, 38(20), 3782-3790.
 
 Magirr, D. and Jiménez, J. (2022)
 Stratified modestly-weighted log-rank tests in settings with an anticipated delayed separation of survival curves
-PREPRINT at https://arxiv.org/abs/2201.10445
+PREPRINT at \url{https://arxiv.org/abs/2201.10445}
 }

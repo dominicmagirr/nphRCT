@@ -66,7 +66,7 @@ test_that("example setting t_star", {
          data=sim_data,
          method="mw",
          t_star = 4
-    )), "out_t_star.RDS",cran = TRUE)
+    )), "out_t_star.RDS",cran = FALSE)
 })
 test_that("example setting s_star", {
   expect_snapshot_file(save_file(	
@@ -74,7 +74,7 @@ test_that("example setting s_star", {
          data=sim_data,
          method="mw",
          s_star = 0.5
-    )), "out_s_star.RDS",cran = TRUE)
+    )), "out_s_star.RDS",cran = FALSE)
 })
 test_that("example with 1 strata", {
   expect_snapshot_file(save_file(	
@@ -82,7 +82,7 @@ test_that("example with 1 strata", {
          data=sim_data_strata,
          method="mw",
          t_star = 4
-    )), "out_strata.RDS",cran = TRUE)
+    )), "out_strata.RDS",cran = FALSE)
 })
 
 test_that("example with 2 strata", {
@@ -91,7 +91,7 @@ test_that("example with 2 strata", {
          data=sim_data_strata_2,
          method="mw",
          t_star = 4
-    )), "out_strata_2.RDS",cran = TRUE)
+    )), "out_strata_2.RDS",cran = FALSE)
 })
 
 

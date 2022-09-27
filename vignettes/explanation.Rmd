@@ -46,21 +46,6 @@ library(dplyr)
 library(survival)
 library(ggplot2)
 
-#template <- tempfile(fileext = ".xlsx")
-#httr::GET(url = "https://static-content.springer.com/esm/art%3A10.1038%2Fs41591-018-0134-3/MediaObjects/41591_2018_134_MOESM3_ESM.xlsx", httr::write_disk(template))
-#poplar <- readxl::read_excel(template,
-#                   sheet = 2)
-
-
-#df <- poplar %>% 
-#  select(PtID, ECOGGR, OS, OS.CNSR, TRT01P) %>%
-#  mutate(event = -1 * (OS.CNSR - 1),
-#         time = OS,
-#         arm = ifelse(TRT01P == "Docetaxel", "control", "experimental")) %>% 
-#  select(time, event, arm) %>%
-#  as.data.frame()
-
-### TO DO: put this data in the package (as rdata?)
 data("moderate_cross")
 dat <- moderate_cross
 
@@ -93,7 +78,7 @@ In the graph on the right-hand side, each dot corresponds to a patient in the tr
 
 ## Why is this interesting?
 
-I think this perspective becomes helpful when we start to compare alternative test statistics. One popular approach in the context of non-proportional hazards is to base inference on the difference in restricted mean survival times (RMST) on the two arms (based on the Kaplan-Meier estimates). If we express the corresponding test statistic as a difference in scores (following [Andersen et el.](https://onlinelibrary.wiley.com/doi/full/10.1002/sim.7297)),  we see that every observation after the restriction time (in this case 18 months) get the same score. So an observed event at month 18 receives the same score as a censored observation at 24 months, for example.
+I think this perspective becomes helpful when we start to compare alternative test statistics. One popular approach in the context of non-proportional hazards is to base inference on the difference in restricted mean survival times (RMST) on the two arms (based on the Kaplan-Meier estimates). If we express the corresponding test statistic as a difference in scores (following [Andersen et el.](https://pubmed.ncbi.nlm.nih.gov/28384840/)),  we see that every observation after the restriction time (in this case 18 months) get the same score. So an observed event at month 18 receives the same score as a censored observation at 24 months, for example.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 df_rmst_pseudo <- find_scores(formula=Surv(time, event) ~ arm, 
@@ -116,7 +101,7 @@ cowplot::plot_grid(p_km[[1]],p_surv,rel_widths=c(2,3))
 
 ## Weighted log-rank tests
 
-Weighted log-rank tests can also be compared in this framework. For example, a [modestly-weighted log-rank test](https://onlinelibrary.wiley.com/doi/full/10.1002/sim.8186) ($t^*= 9$).
+Weighted log-rank tests can also be compared in this framework. For example, a [modestly-weighted log-rank test](https://arxiv.org/abs/1807.11097) ($t^*= 9$).
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -178,7 +163,7 @@ so that $b \in (-1,1)$ would also leave the p-value of the permutation test unch
 
 ### RMST / Milestone
 
-We use the concept of pseudo-values following [Andersen et al. (2017)](https://onlinelibrary.wiley.com/doi/full/10.1002/sim.7297).
+We use the concept of pseudo-values following [Andersen et al. (2017)](https://pubmed.ncbi.nlm.nih.gov/28384840/).
 
 For the RMST, without any adjustment for covariates, the $i$-th pseudo-value (at time $\tau$) is defined as 
 $$\widehat{\theta}_{i}^{\tiny \mbox{RMST}} = n \int_0^\tau \widehat{S}(t) dt - (n-1) \int_0^\tau \widehat{S}^{(-i)}(t) dt,$$

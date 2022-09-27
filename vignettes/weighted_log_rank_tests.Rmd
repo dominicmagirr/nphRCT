@@ -242,4 +242,4 @@ Statistics in medicine, 38(20), 3782-3790.
 
 Magirr, D. and Jiménez, J. (2022)
 Stratified modestly-weighted log-rank tests in settings with an anticipated delayed separation of survival curves
-PREPRINT at https://arxiv.org/abs/2201.10445
+PREPRINT at <https://arxiv.org/abs/2201.10445>
