@@ -1,6 +1,6 @@
 Package: nphRCT
 Title: Non-Proportional Hazards in Randomized Controlled Trials
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: 
     c(person("Dominic", "Magirr", email = "d.magirr@gmail.com", role = c("aut", "cre")),
       person("Isobel", "Barrott", email = "isobel.barrott@gmail.com", role = c("aut")),
