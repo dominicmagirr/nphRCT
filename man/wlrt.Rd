@@ -11,7 +11,8 @@ wlrt(
   t_star = NULL,
   s_star = NULL,
   rho = NULL,
-  gamma = NULL
+  gamma = NULL,
+  timefix = TRUE
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ or \code{"fh"} for the Fleming-Harrington rho-gamma family.}
 \item{rho}{Parameter \eqn{\rho} in the Fleming-Harrington (\code{"fh"}) test, see Details.}
 
 \item{gamma}{Parameter \eqn{\gamma} in the Fleming-Harrington (\code{"fh"}) test, see Details.}
+
+\item{timefix}{Deal with floating point issues (as in the survival package). Default is TRUE. May need to set FALSE for simulated data.}
 }
 \value{
 List containing the outcome of the weighted log-rank test.

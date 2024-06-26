@@ -37,11 +37,11 @@
 #'   max_cal_t = 36
 #' )
 #' #with censoring times included
-#' find_at_risk(formula=Surv(event_time,event_status)~group,
+#' find_at_risk(formula=survival::Surv(event_time,event_status)~group,
 #'   data=sim_data,
 #'   include_cens=TRUE)
 #' #with censoring times excluded
-#' find_at_risk(formula=Surv(event_time,event_status)~group,
+#' find_at_risk(formula=survival::Surv(event_time,event_status)~group,
 #'   data=sim_data,
 #'   include_cens=FALSE)
 #' @export
@@ -80,7 +80,7 @@ find_at_risk<-function(formula,
   ## timefix logic
   ################
   if (timefix){
-  times <- survival::aeqSurv(Surv(times, rep(1, length(times))))[,1]
+  times <- survival::aeqSurv(survival::Surv(times, rep(1, length(times))))[,1]
   }
   
   if (include_cens==TRUE){

@@ -12,7 +12,8 @@ find_scores(
   s_star = NULL,
   rho = NULL,
   gamma = NULL,
-  tau = NULL
+  tau = NULL,
+  timefix = TRUE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ milestone analysis \code{"ms"})}
 \item{gamma}{Parameter \eqn{\gamma} in the Fleming-Harrington (\code{"fh"}) test, see Details.}
 
 \item{tau}{Parameter \eqn{\tau} in the RMST (\code{"rmst"}) or milestone analysis  (\code{"ms"}) test.}
+
+\item{timefix}{Deal with floating point issues (as in the survival package). Default is TRUE. May need to set FALSE for simulated data.}
 }
 \value{
 Data frame. Each row corresponds to an event or censoring time.

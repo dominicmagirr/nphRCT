@@ -16,11 +16,11 @@ sim_data <- sim_events_delay(
 )
 
 #with censoring included
-out_cens<-find_at_risk(formula=Surv(event_time,event_status)~group,
+out_cens<-find_at_risk(formula=survival::Surv(event_time,event_status)~group,
              data=sim_data,
              include_cens=TRUE)
 #with censoring excluded
-out_no_cens<-find_at_risk(formula=Surv(event_time,event_status)~group,
+out_no_cens<-find_at_risk(formula=survival::Surv(event_time,event_status)~group,
              data=sim_data,
              include_cens=FALSE)
 

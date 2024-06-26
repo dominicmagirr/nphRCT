@@ -4,7 +4,7 @@
 \alias{find_at_risk}
 \title{Calculate at-risk table}
 \usage{
-find_at_risk(formula, data, include_cens = TRUE)
+find_at_risk(formula, data, include_cens = TRUE, timefix = TRUE)
 }
 \arguments{
 \item{formula}{Formula object. The response (on the left of the \code{~} operator) must be a survival object as returned by the \code{Surv} function.
@@ -13,6 +13,8 @@ The terms (on the right of the \code{~} operator) must include the treatment arm
 \item{data}{Data frame containing time-to-event data.}
 
 \item{include_cens}{Boolean indicating whether to include values corresponding to censoring times}
+
+\item{timefix}{Deal with floating point issues (as in the survival package). Default is TRUE. May need to set FALSE for simulated data.}
 }
 \value{
 Data frame
@@ -50,11 +52,11 @@ sim_data <- sim_events_delay(
   max_cal_t = 36
 )
 #with censoring times included
-find_at_risk(formula=Surv(event_time,event_status)~group,
+find_at_risk(formula=survival::Surv(event_time,event_status)~group,
   data=sim_data,
   include_cens=TRUE)
 #with censoring times excluded
-find_at_risk(formula=Surv(event_time,event_status)~group,
+find_at_risk(formula=survival::Surv(event_time,event_status)~group,
   data=sim_data,
   include_cens=FALSE)
 }
